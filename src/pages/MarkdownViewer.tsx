@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { IconArrowLeft, IconDownload, IconShare, IconClock, IconFileText, IconList, IconEye, IconEyeOff, IconMenu, IconX, IconHash } from '@tabler/icons-react';
+import { Container, Group, ActionIcon, Tooltip, Button, Menu, Text, LoadingOverlay, Alert, Grid, Paper, Title, Stack, Anchor, Code, TypographyStylesProvider } from '@mantine/core';
+import { IconDownload, IconShare, IconClock, IconFileText, IconMenu2, IconEye, IconEyeOff } from '@tabler/icons-react';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import TableOfContents from '../components/TableOfContents';
+import PageHeader from '../components/PageHeader';
 import { ClipboardItem, MarkdownContent, MarkdownRenderOptions } from '../../shared/types';
 import { detectMarkdown, parseMarkdownContent, generateTableOfContents } from '../utils/markdownUtils';
 
@@ -168,205 +170,160 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
-          <svg className="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          <span>Loading markdown content...</span>
-        </div>
-      </div>
+      <Container size="lg" py="xl">
+        <LoadingOverlay visible={true} overlayProps={{ radius: "sm", blur: 2 }} />
+        <Text ta="center" c="dimmed">加载Markdown内容中...</Text>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">
-              Error Loading Content
-            </h2>
-            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              <IconArrowLeft size={16} />
-              <span>Go Back</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <Container size="lg" py="xl">
+        <Alert color="red" title="加载内容失败" mb="md">
+          {error}
+        </Alert>
+        <Group justify="center">
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            返回
+          </Button>
+        </Group>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 顶部导航栏 */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* 左侧：返回按钮和标题 */}
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                title="Go back"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  {directTitle || markdownContent?.title || 'Markdown Viewer'}
-                </h1>
-                {clipboardItem && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center space-x-2">
-                    <IconClock size={14} />
-                    <span>{formatTime(clipboardItem.timestamp)}</span>
-                    {markdownContent && (
-                      <>
-                        <span>•</span>
-                        <IconFileText size={14} />
-                        <span>{markdownContent.wordCount} words</span>
-                        <span>•</span>
-                        <span>{markdownContent.estimatedReadTime} min read</span>
-                      </>
-                    )}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* 右侧：操作按钮 */}
-            <div className="flex items-center space-x-2">
-              {/* 目录切换 */}
-              {tableOfContents.length > 0 && (
-                <button
-                  onClick={() => setShowToc(!showToc)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    showToc
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                  }`}
-                  title="Toggle table of contents"
-                >
-                  <IconMenu size={18} />
-                </button>
+    <Container size="xl" py="md">
+      <PageHeader
+        title={directTitle || markdownContent?.title || 'Markdown查看器'}
+        subtitle={
+          clipboardItem ? (
+            <Group gap="xs" c="dimmed">
+              <IconClock size={14} />
+              <Text size="sm">{formatTime(clipboardItem.timestamp)}</Text>
+              {markdownContent && (
+                <>
+                  <Text size="sm">•</Text>
+                  <IconFileText size={14} />
+                  <Text size="sm">{markdownContent.wordCount} 字</Text>
+                  <Text size="sm">•</Text>
+                  <Text size="sm">{markdownContent.estimatedReadTime} 分钟阅读</Text>
+                </>
               )}
+            </Group>
+          ) : undefined
+        }
 
-              {/* 原始内容切换 */}
-              <button
+        rightSection={
+          <Group gap="xs">
+            {tableOfContents.length > 0 && (
+              <Tooltip label="切换目录">
+                <ActionIcon
+                  variant={showToc ? "filled" : "subtle"}
+                  onClick={() => setShowToc(!showToc)}
+                >
+                  <IconMenu2 size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            
+            <Tooltip label={showRawContent ? "显示渲染内容" : "显示原始内容"}>
+              <ActionIcon
+                variant={showRawContent ? "filled" : "subtle"}
                 onClick={() => setShowRawContent(!showRawContent)}
-                className={`p-2 rounded-lg transition-colors ${
-                  showRawContent
-                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                }`}
-                title={showRawContent ? 'Show rendered' : 'Show raw content'}
               >
-                {showRawContent ? <IconEye size={18} /> : <IconEyeOff size={18} />}
-              </button>
-
-              {/* 分享按钮 */}
-              <button
+                {showRawContent ? <IconEye size={16} /> : <IconEyeOff size={16} />}
+              </ActionIcon>
+            </Tooltip>
+            
+            <Tooltip label="分享">
+              <ActionIcon
+                variant="subtle"
                 onClick={handleShare}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                title="Share"
               >
-                <IconShare size={18} />
-              </button>
-
-              {/* 导出菜单 */}
-              <div className="relative group">
-                <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
-                  <IconDownload size={18} />
-                </button>
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="py-1">
-                    <button
-                      onClick={() => handleExport('markdown')}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Export as Markdown
-                    </button>
-                    <button
-                      onClick={() => handleExport('html')}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Export as HTML
-                    </button>
-                    <button
-                      onClick={() => handleExport('txt')}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      Export as Text
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+                <IconShare size={16} />
+              </ActionIcon>
+            </Tooltip>
+            
+            <Menu shadow="md" width={200}>
+              <Menu.Target>
+                <Tooltip label="导出">
+                  <ActionIcon variant="subtle">
+                    <IconDownload size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              </Menu.Target>
+              
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconFileText size={14} />}
+                  onClick={() => handleExport('markdown')}
+                >
+                  导出为 Markdown
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFileText size={14} />}
+                  onClick={() => handleExport('html')}
+                >
+                  导出为 HTML
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFileText size={14} />}
+                  onClick={() => handleExport('txt')}
+                >
+                  导出为文本
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+        }
+      />
 
       {/* 主要内容区域 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-8">
-          {/* 目录侧边栏 */}
-          {showToc && tableOfContents.length > 0 && (
-            <aside className="w-64 flex-shrink-0">
-              <div className="sticky top-24">
-                <TableOfContents
-                  items={tableOfContents}
-                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
-                />
-              </div>
-            </aside>
-          )}
+      <Grid gutter="lg">
+        {/* 目录侧边栏 */}
+        {showToc && tableOfContents.length > 0 && (
+          <Grid.Col span={3}>
+            <Paper withBorder p="md" style={{ position: 'sticky', top: '1rem' }}>
+              <Title order={4} size="sm" mb="md">
+                目录
+              </Title>
+              <Stack gap="xs">
+                {tableOfContents.map((item, index) => (
+                  <Anchor
+                    key={index}
+                    href={`#${item.id}`}
+                    size="sm"
+                    style={{
+                      paddingLeft: `${(item.level - 1) * 12}px`,
+                      fontWeight: item.level === 1 ? 600 : 400
+                    }}
+                  >
+                    {item.text}
+                  </Anchor>
+                ))}
+              </Stack>
+            </Paper>
+          </Grid.Col>
+        )}
 
-          {/* 主要内容 */}
-          <main className="flex-1 min-w-0">
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-              {showRawContent ? (
-                /* 原始内容显示 */
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      Raw Content
-                    </h3>
-                    <button
-                      onClick={() => {
-                        if (clipboardItem) {
-                          navigator.clipboard.writeText(clipboardItem.content);
-                        }
-                      }}
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                    >
-                      Copy Raw
-                    </button>
-                  </div>
-                  <pre className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 overflow-x-auto text-sm font-mono whitespace-pre-wrap">
-                    {clipboardItem?.content}
-                  </pre>
-                </div>
-              ) : (
-                /* 渲染的Markdown内容 */
-                <div className="p-6">
-                  {clipboardItem && (
-                    <MarkdownRenderer
-                      content={clipboardItem.content}
-                      options={renderOptions}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-          </main>
-        </div>
-      </div>
-    </div>
+        {/* 主要内容 */}
+        <Grid.Col span={showToc && tableOfContents.length > 0 ? 9 : 12}>
+          <Paper withBorder p="xl">
+            {showRawContent ? (
+              <Code block>
+                {clipboardItem?.content || directContent}
+              </Code>
+            ) : (
+              <MarkdownRenderer
+                content={clipboardItem?.content || directContent || ''}
+                options={renderOptions}
+              />
+            )}
+          </Paper>
+        </Grid.Col>
+      </Grid>
+    </Container>
   );
 };
 

@@ -32,6 +32,7 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import type { AppConfig } from '../types';
+import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
   const [config, setConfig] = useState<AppConfig | null>(null);
@@ -163,25 +164,27 @@ const Settings: React.FC = () => {
   return (
     <Container size="md" py="md">
       <Stack gap="lg">
-        <Group justify="space-between">
-          <Title order={2}>应用设置</Title>
-          <Group>
-            <Button
-              variant="light"
-              leftSection={<IconRefresh size={16} />}
-              onClick={loadConfig}
-            >
-              刷新
-            </Button>
-            <Button
-              variant="light"
-              leftSection={<IconDownload size={16} />}
-              onClick={handleExportConfig}
-            >
-              导出配置
-            </Button>
-          </Group>
-        </Group>
+        <PageHeader
+          title="应用设置"
+          actions={
+            <Group>
+              <Button
+                variant="light"
+                leftSection={<IconRefresh size={16} />}
+                onClick={loadConfig}
+              >
+                刷新
+              </Button>
+              <Button
+                variant="light"
+                leftSection={<IconDownload size={16} />}
+                onClick={handleExportConfig}
+              >
+                导出配置
+              </Button>
+            </Group>
+          }
+        />
 
         {/* 外观设置 */}
         <Card shadow="sm" padding="lg" radius="md">
