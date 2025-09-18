@@ -5,11 +5,29 @@ import type { ElectronAPI } from '../renderer/main/src/types';
 const electronAPI: ElectronAPI = {
   // 剪贴板相关
   getClipboardHistory: () => ipcRenderer.invoke('clipboard:getHistory'),
+  copyToClipboard: (content) => ipcRenderer.invoke('clipboard:copyToClipboard', content),
+  removeClipboardItem: (id) => ipcRenderer.invoke('clipboard:removeItem', id),
+  toggleFavorite: (id) => ipcRenderer.invoke('clipboard:toggleFavorite', id),
+  clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clearHistory'),
+  onClipboardUpdate: (callback) => {
+    ipcRenderer.on('clipboard:update', (_, items) => callback(items));
+  },
   onClipboardChanged: (callback) => {
-    ipcRenderer.on('clipboard:changed', (_, item) => callback(item));
+    console.log('Preload: 注册clipboard:changed事件监听器');
+    ipcRenderer.on('clipboard:changed', (_, item) => {
+      console.log('Preload接收到clipboard:changed事件:', item);
+      console.log('Preload: 准备调用回调函数');
+      try {
+        callback(item);
+        console.log('Preload: 回调函数调用成功');
+      } catch (error) {
+        console.error('Preload: 回调函数调用失败:', error);
+      }
+    });
   },
   removeClipboardChangeListener: () => {
     ipcRenderer.removeAllListeners('clipboard:changed');
+    ipcRenderer.removeAllListeners('clipboard:update');
   },
   
   // 窗口控制
@@ -19,7 +37,12 @@ const electronAPI: ElectronAPI = {
   
   // 配置管理
   getConfig: () => ipcRenderer.invoke('app:getConfig'),
-  setConfig: (config) => ipcRenderer.invoke('app:setConfig', config),
+  updateConfig: (config) => ipcRenderer.invoke('app:updateConfig', config),
+  onConfigUpdate: (callback) => {
+    ipcRenderer.on('config:update', (_, config) => callback(config));
+  },
+  exportConfig: () => ipcRenderer.invoke('config:export'),
+  importConfig: (configData) => ipcRenderer.invoke('config:import', configData),
   
   // 应用控制
   quitApp: () => ipcRenderer.invoke('app:quit'),
@@ -31,5 +54,8 @@ contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
 // 开发环境下的调试信息
 if (process.env.NODE_ENV === 'development') {
-  console.log('Preload script loaded successfully');
+  console.log('=== Preload script loaded ===');
+  console.log('Available APIs:', Object.keys(electronAPI));
+  console.log('Window location:', window.location.href);
+  console.log('IpcRenderer available:', !!ipcRenderer);
 }

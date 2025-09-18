@@ -33,7 +33,7 @@ export class WindowManager {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, '../../preload/index.js'),
+        preload: path.join(__dirname, '../../preload/preload/index.js'),
         webSecurity: true,
         allowRunningInsecureContent: false
       }
@@ -44,7 +44,7 @@ export class WindowManager {
 
     // 加载主窗口内容
     if (isDev) {
-      await this.mainWindow.loadURL('http://localhost:5173');
+      await this.mainWindow.loadURL('http://localhost:3000');
       this.mainWindow.webContents.openDevTools();
     } else {
       await this.mainWindow.loadFile(path.join(__dirname, '../../renderer/main/index.html'));
@@ -93,7 +93,7 @@ export class WindowManager {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, '../../preload/index.js'),
+        preload: path.join(__dirname, '../../preload/preload/index.js'),
         webSecurity: true
       }
     });
@@ -156,7 +156,10 @@ export class WindowManager {
 
   sendToMainWindow(channel: string, ...args: any[]) {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      console.log('主进程发送事件到渲染进程:', channel, args);
       this.mainWindow.webContents.send(channel, ...args);
+    } else {
+      console.log('主窗口不存在或已销毁，无法发送事件:', channel);
     }
   }
 

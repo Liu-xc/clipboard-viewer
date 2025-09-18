@@ -7,7 +7,65 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 窗口拖动区域 */
+.mantine-AppShell-header {
+  -webkit-app-region: drag;
+  cursor: grab;
+  position: relative;
+}
+
+.mantine-AppShell-header:active {
+  cursor: grabbing;
+}
+
+/* 拖动区域视觉提示 */
+.mantine-AppShell-header::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 4px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--mantine-color-gray-4) 0px,
+    var(--mantine-color-gray-4) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  border-radius: 2px;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-AppShell-header::before {
+  background: repeating-linear-gradient(
+    to right,
+    var(--mantine-color-gray-6) 0px,
+    var(--mantine-color-gray-6) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+}
+
+.mantine-AppShell-header:hover::before {
+  opacity: 0.6;
+}
+
+/* 确保header内的按钮和交互元素可以点击 */
+.mantine-AppShell-header button,
+.mantine-AppShell-header .mantine-ActionIcon-root,
+.mantine-AppShell-header .mantine-Burger-root {
+  -webkit-app-region: no-drag;
 }
 
 #root {

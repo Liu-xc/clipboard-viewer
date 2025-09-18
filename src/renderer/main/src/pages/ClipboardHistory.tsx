@@ -43,19 +43,40 @@ const ClipboardHistory: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('ClipboardHistory组件: useEffect开始执行');
     loadClipboardHistory();
     
-    // 监听剪贴板更新
-    const handleClipboardUpdate = (items: ClipboardItem[]) => {
-      setClipboardItems(items);
+    // 监听剪贴板变化
+    const handleClipboardChange = (newItem: ClipboardItem) => {
+      console.log('渲染进程接收到剪贴板变化事件:', newItem);
+      console.log('渲染进程: 准备更新状态');
+      setClipboardItems(prevItems => {
+        console.log('渲染进程: 状态更新函数被调用, 当前项目数:', prevItems.length);
+        return [newItem, ...prevItems];
+      });
+    };
+
+    // 监听剪贴板历史更新
+    const handleClipboardUpdate = (updatedItems: ClipboardItem[]) => {
+      console.log('渲染进程接收到剪贴板历史更新事件:', updatedItems.length, '个项目');
+      setClipboardItems(updatedItems);
     };
     
+    console.log('ClipboardHistory组件: 检查window.electronAPI是否存在:', !!window.electronAPI);
     if (window.electronAPI) {
+      console.log('ClipboardHistory组件: 注册剪贴板事件监听器');
+      window.electronAPI.onClipboardChanged(handleClipboardChange);
       window.electronAPI.onClipboardUpdate(handleClipboardUpdate);
+      console.log('ClipboardHistory组件: 事件监听器注册完成');
+    } else {
+      console.error('ClipboardHistory组件: window.electronAPI不存在!');
     }
     
     return () => {
-      // 清理监听器
+      console.log('ClipboardHistory组件: 清理事件监听器');
+      if (window.electronAPI) {
+        window.electronAPI.removeClipboardChangeListener();
+      }
     };
   }, []);
 

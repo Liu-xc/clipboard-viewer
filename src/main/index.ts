@@ -54,6 +54,7 @@ class ClipboardViewerApp {
     
     // 监听剪贴板变化
     this.clipboardService.on('clipboardChanged', (item) => {
+      console.log('主进程接收到clipboardChanged事件:', item);
       this.windowManager.sendToMainWindow('clipboard:changed', item);
     });
   }
@@ -62,6 +63,7 @@ class ClipboardViewerApp {
     app.on('window-all-closed', () => {
       // 在 macOS 上，保持应用运行即使所有窗口都关闭了
       if (process.platform !== 'darwin') {
+        this.clipboardService.stopMonitoring();
         app.quit();
       }
     });
@@ -73,6 +75,11 @@ class ClipboardViewerApp {
       } else {
         this.windowManager.showMainWindow();
       }
+      
+      // 确保剪贴板监听在激活时重新启动
+      if (!this.clipboardService.isMonitoringActive()) {
+        this.clipboardService.startMonitoring();
+      }
     });
 
     app.on('second-instance', () => {
@@ -83,6 +90,10 @@ class ClipboardViewerApp {
     app.on('before-quit', () => {
       this.clipboardService.stopMonitoring();
     });
+
+    app.on('will-quit', () => {
+      this.clipboardService.stopMonitoring();
+    });
   }
 
   private setupIPCHandlers() {
@@ -91,6 +102,50 @@ class ClipboardViewerApp {
       try {
         const history = await this.storageService.getClipboardHistory();
         return { success: true, data: history };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('clipboard:copyToClipboard', async (_, content) => {
+      try {
+        this.clipboardService.setClipboardContent(content);
+        return { success: true, data: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('clipboard:removeItem', async (_, id) => {
+      try {
+        await this.storageService.removeClipboardItem(id);
+        // 通知所有窗口更新
+        const history = await this.storageService.getClipboardHistory();
+        this.windowManager.sendToMainWindow('clipboard:update', history);
+        return { success: true, data: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('clipboard:toggleFavorite', async (_, id) => {
+      try {
+        await this.storageService.toggleFavorite(id);
+        // 通知所有窗口更新
+        const history = await this.storageService.getClipboardHistory();
+        this.windowManager.sendToMainWindow('clipboard:update', history);
+        return { success: true, data: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('clipboard:clearHistory', async () => {
+      try {
+        await this.storageService.clearHistory();
+        // 通知所有窗口更新
+        this.windowManager.sendToMainWindow('clipboard:update', []);
+        return { success: true, data: true };
       } catch (error) {
         return { success: false, error: (error as Error).message };
       }
@@ -119,13 +174,38 @@ class ClipboardViewerApp {
       }
     });
 
-    ipcMain.handle('app:setConfig', async (_, config) => {
+    ipcMain.handle('app:updateConfig', async (_, config) => {
       try {
         await this.configService.updateConfig(config);
+        // 通知所有窗口配置更新
+        const newConfig = await this.configService.getConfig();
+        this.windowManager.sendToMainWindow('config:update', newConfig);
         return { success: true, data: true };
       } catch (error) {
-          return { success: false, error: (error as Error).message };
-        }
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('config:export', async () => {
+      try {
+        const config = await this.configService.getConfig();
+        return { success: true, data: JSON.stringify(config, null, 2) };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('config:import', async (_, configData) => {
+      try {
+        const config = JSON.parse(configData);
+        await this.configService.updateConfig(config);
+        // 通知所有窗口配置更新
+        const newConfig = await this.configService.getConfig();
+        this.windowManager.sendToMainWindow('config:update', newConfig);
+        return { success: true, data: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
     });
 
     // 应用控制

@@ -42,11 +42,17 @@ export class ClipboardService extends EventEmitter {
     console.log('Clipboard monitoring stopped');
   }
 
+  isMonitoringActive(): boolean {
+    return this.isMonitoring;
+  }
+
   private async checkClipboardChange() {
     try {
       const currentContent = clipboard.readText();
+      console.log('检查剪贴板变化, 当前内容长度:', currentContent.length);
       
       // 检查内容是否发生变化
+      console.log('上次内容长度:', this.lastClipboardContent.length, '当前内容是否不同:', currentContent !== this.lastClipboardContent, '当前内容是否非空:', currentContent.trim() !== '');
       if (currentContent !== this.lastClipboardContent && currentContent.trim() !== '') {
         this.lastClipboardContent = currentContent;
         
@@ -57,7 +63,9 @@ export class ClipboardService extends EventEmitter {
         await this.storageService.addClipboardItem(clipboardItem);
         
         // 发出变化事件
+        console.log('准备发出clipboardChanged事件:', clipboardItem);
         this.emit('clipboardChanged', clipboardItem);
+        console.log('已发出clipboardChanged事件');
         
         console.log('Clipboard changed:', clipboardItem.preview);
       }
@@ -200,8 +208,5 @@ export class ClipboardService extends EventEmitter {
     this.lastClipboardContent = '';
   }
 
-  // 获取监听状态
-  isMonitoringActive(): boolean {
-    return this.isMonitoring;
-  }
+
 }
