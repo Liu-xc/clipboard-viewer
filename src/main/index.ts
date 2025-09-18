@@ -1,0 +1,180 @@
+import { app, BrowserWindow, ipcMain, globalShortcut, Menu, Tray, nativeImage } from 'electron';
+import * as path from 'path';
+import { WindowManager } from './windowManager';
+import { ClipboardService } from './clipboard';
+import { ConfigService } from './config';
+import { StorageService } from './storage';
+
+const isDev = process.env.NODE_ENV === 'development';
+
+class ClipboardViewerApp {
+  private windowManager: WindowManager;
+  private clipboardService: ClipboardService;
+  private storageService: StorageService;
+  private configService: ConfigService;
+  private tray: Tray | null = null;
+
+  constructor() {
+    this.storageService = new StorageService();
+    this.configService = new ConfigService();
+    this.windowManager = new WindowManager(this.configService);
+    this.clipboardService = new ClipboardService(this.storageService);
+  }
+
+  async initialize() {
+    // 确保只有一个实例运行
+    const gotTheLock = app.requestSingleInstanceLock();
+    if (!gotTheLock) {
+      app.quit();
+      return;
+    }
+
+    // 设置应用事件监听
+    this.setupAppEvents();
+    
+    // 设置 IPC 处理器
+    this.setupIPCHandlers();
+    
+    // 等待应用准备就绪
+    await app.whenReady();
+    
+    // 创建系统托盘
+    this.createTray();
+    
+    // 初始化服务
+    await this.configService.initialize();
+    await this.clipboardService.initialize();
+    
+    // 创建窗口
+    await this.windowManager.createMainWindow();
+    await this.windowManager.createFloatingBall();
+    
+    // 开始监听剪贴板
+    this.clipboardService.startMonitoring();
+    
+    // 监听剪贴板变化
+    this.clipboardService.on('clipboardChanged', (item) => {
+      this.windowManager.sendToMainWindow('clipboard:changed', item);
+    });
+  }
+
+  private setupAppEvents() {
+    app.on('window-all-closed', () => {
+      // 在 macOS 上，保持应用运行即使所有窗口都关闭了
+      if (process.platform !== 'darwin') {
+        app.quit();
+      }
+    });
+
+    app.on('activate', async () => {
+      // 在 macOS 上，当点击 dock 图标时重新创建窗口
+      if (BrowserWindow.getAllWindows().length === 0) {
+        await this.windowManager.createMainWindow();
+      } else {
+        this.windowManager.showMainWindow();
+      }
+    });
+
+    app.on('second-instance', () => {
+      // 当尝试运行第二个实例时，聚焦到主窗口
+      this.windowManager.showMainWindow();
+    });
+
+    app.on('before-quit', () => {
+      this.clipboardService.stopMonitoring();
+    });
+  }
+
+  private setupIPCHandlers() {
+    // 剪贴板相关
+    ipcMain.handle('clipboard:getHistory', async () => {
+      try {
+        const history = await this.storageService.getClipboardHistory();
+        return { success: true, data: history };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    // 窗口控制
+    ipcMain.handle('mainWindow:show', () => {
+      this.windowManager.showMainWindow();
+    });
+
+    ipcMain.handle('mainWindow:hide', () => {
+      this.windowManager.hideMainWindow();
+    });
+
+    ipcMain.handle('floatingBall:toggle', () => {
+      this.windowManager.toggleFloatingBall();
+    });
+
+    // 配置管理
+    ipcMain.handle('app:getConfig', async () => {
+      try {
+        const config = await this.configService.getConfig();
+        return { success: true, data: config };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('app:setConfig', async (_, config) => {
+      try {
+        await this.configService.updateConfig(config);
+        return { success: true, data: true };
+      } catch (error) {
+          return { success: false, error: (error as Error).message };
+        }
+    });
+
+    // 应用控制
+    ipcMain.handle('app:quit', () => {
+      app.quit();
+    });
+
+    ipcMain.handle('app:minimizeToTray', () => {
+      this.windowManager.hideMainWindow();
+    });
+  }
+
+  private createTray() {
+    // 创建托盘图标
+    const trayIcon = nativeImage.createFromPath(
+      path.join(__dirname, isDev ? '../../assets' : '../assets', 'tray-icon.png')
+    );
+    
+    this.tray = new Tray(trayIcon);
+    
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: '显示主窗口',
+        click: () => this.windowManager.showMainWindow()
+      },
+      {
+        label: '切换悬浮球',
+        click: () => this.windowManager.toggleFloatingBall()
+      },
+      { type: 'separator' },
+      {
+        label: '退出',
+        click: () => app.quit()
+      }
+    ]);
+    
+    this.tray.setContextMenu(contextMenu);
+    this.tray.setToolTip('Clipboard Viewer');
+    
+    // 双击托盘图标显示主窗口
+    this.tray.on('double-click', () => {
+      this.windowManager.showMainWindow();
+    });
+  }
+}
+
+// 创建并初始化应用
+const clipboardApp = new ClipboardViewerApp();
+clipboardApp.initialize().catch(console.error);
+
+// 导出应用实例（用于测试）
+export default clipboardApp;
