@@ -39,6 +39,7 @@ import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import type { ClipboardItem } from '../types';
 import { detectMarkdown } from '../../../../utils/markdownUtils';
+import { MarkdownRenderer } from '../../../../components/MarkdownRenderer';
 
 const ClipboardHistory: React.FC = () => {
   const navigate = useNavigate();
@@ -242,9 +243,23 @@ const ClipboardHistory: React.FC = () => {
     );
   });
 
+  const handleCardClick = (item: ClipboardItem) => {
+    if (item.type === 'text') {
+      navigate(`/markdown/${item.id}`);
+    }
+  };
+
   const renderClipboardItem = (item: ClipboardItem) => {
     return (
-      <Card key={item.id} shadow="sm" padding="md" radius="md" className="clipboard-item">
+      <Card 
+        key={item.id} 
+        shadow="sm" 
+        padding="md" 
+        radius="md" 
+        className="clipboard-item"
+        style={{ cursor: item.type === 'text' ? 'pointer' : 'default' }}
+        onClick={() => handleCardClick(item)}
+      >
         <Group justify="space-between" mb="xs">
           <Group gap="xs">
             {getTypeIcon(item.type)}
@@ -270,7 +285,11 @@ const ClipboardHistory: React.FC = () => {
             
             <Menu shadow="md" width={200}>
               <Menu.Target>
-                <ActionIcon variant="subtle" size="sm">
+                <ActionIcon 
+                  variant="subtle" 
+                  size="sm"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <IconDots size={16} />
                 </ActionIcon>
               </Menu.Target>
@@ -327,6 +346,19 @@ const ClipboardHistory: React.FC = () => {
             <Code block className="code-block">
               {item.preview}
             </Code>
+          ) : item.type === 'text' ? (
+            <div style={{ maxHeight: '120px', overflow: 'hidden' }}>
+              <MarkdownRenderer 
+                content={item.preview} 
+                options={{ 
+                  enableSyntaxHighlight: false,
+                  enableMermaid: false,
+                  enableMath: false,
+                  enableTableOfContents: false
+                }}
+                className="text-sm"
+              />
+            </div>
           ) : (
             <Text size="sm" lineClamp={3}>
               {item.preview}

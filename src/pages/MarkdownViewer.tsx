@@ -59,16 +59,22 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
       }
 
       try {
-        // 这里应该从实际的数据源获取剪贴板项目
-        // 暂时使用模拟数据
-        const mockItem: ClipboardItem = {
-          id,
-          content: '# Sample Markdown\n\nThis is a sample markdown content for testing.',
-          timestamp: Date.now(),
-          type: 'text'
-        };
-        
-        setClipboardItem(mockItem);
+        // 从实际的数据源获取剪贴板项目
+        if (window.electronAPI) {
+          const response = await window.electronAPI.getClipboardHistory();
+          if (response.success && response.data) {
+            const item = response.data.find(item => item.id === id);
+            if (item) {
+              setClipboardItem(item);
+            } else {
+              setError('未找到指定的剪贴板项目');
+            }
+          } else {
+            setError(response.error || '获取剪贴板历史失败');
+          }
+        } else {
+          setError('无法访问剪贴板API');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load clipboard item');
       } finally {

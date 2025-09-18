@@ -9,6 +9,7 @@ import Sidebar from './components/Sidebar';
 import ClipboardHistory from './pages/ClipboardHistory';
 import Settings from './pages/Settings';
 import MarkdownViewer from '../../../pages/MarkdownViewer';
+import MermaidTest from '../../../pages/MermaidTest';
 import type { AppConfig } from './types';
 
 function App() {
@@ -157,6 +158,7 @@ function App() {
           <Route path="/history" element={<ClipboardHistory />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/markdown/:id" element={<MarkdownViewer />} />
+          <Route path="/mermaid-test" element={<MermaidTest />} />
         </Routes>
       </AppShell.Main>
     </AppShell>
