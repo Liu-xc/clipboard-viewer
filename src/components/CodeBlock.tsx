@@ -173,7 +173,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             title={showNumbers ? 'Hide line numbers' : 'Show line numbers'}
           >
-            {showNumbers ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showNumbers ? <IconEyeOff size={16} /> : <IconEye size={16} />}
           </button>
           
           {/* 折叠/展开 */}

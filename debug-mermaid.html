@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid Debug Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .chart-container {
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            padding: 20px;
+        }
+        .debug-info {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mermaid v11 Debug Test</h1>
+    
+    <div class="debug-info">
+        <h3>Test 1: Basic Pie Chart</h3>
+        <div class="chart-container">
+            <div id="chart1"></div>
+        </div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Test 2: Pie Chart with Legend Configuration</h3>
+        <div class="chart-container">
+            <div id="chart2"></div>
+        </div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>DOM Structure Analysis</h3>
+        <div id="dom-analysis"></div>
+    </div>
+    
+    <script>
+        // Initialize Mermaid with v11 configuration
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            pie: {
+                useMaxWidth: true,
+                textPosition: 0.75,
+                legendPosition: 'bottom',
+                showLegend: true
+            },
+            themeVariables: {
+                pieOuterStrokeWidth: '5px',
+                pieSectionTextSize: '19px',
+                pieTitleTextSize: '25px',
+                pieLegendTextSize: '16px'
+            }
+        });
+        
+        // Test 1: Basic pie chart
+        const chart1Content = `pie title Sample Data
+    "Category A" : 42.96
+    "Category B" : 50.05
+    "Category C" : 10.01
+    "Category D" : 5`;
+        
+        // Test 2: Pie chart with explicit legend
+        const chart2Content = `pie showData title Revenue Distribution
+    "Product Sales" : 45
+    "Services" : 30
+    "Licensing" : 15
+    "Other" : 10`;
+        
+        async function renderChart(elementId, content, testName) {
+            try {
+                console.log(`Rendering ${testName}...`);
+                const element = document.getElementById(elementId);
+                
+                // Clear previous content
+                element.innerHTML = '';
+                
+                // Render with Mermaid v11 API
+                const { svg } = await mermaid.render(`${elementId}-svg`, content);
+                element.innerHTML = svg;
+                
+                // Analyze DOM structure after rendering
+                setTimeout(() => {
+                    analyzeDOMStructure(elementId, testName);
+                }, 100);
+                
+                console.log(`${testName} rendered successfully`);
+            } catch (error) {
+                console.error(`Error rendering ${testName}:`, error);
+                document.getElementById(elementId).innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        function analyzeDOMStructure(elementId, testName) {
+            const container = document.getElementById(elementId);
+            const analysisDiv = document.getElementById('dom-analysis');
+            
+            // Find all potential legend elements
+            const legendSelectors = [
+                '.legend',
+                '.pieChart .legend',
+                '.pie-legend',
+                '.mermaid-pie-legend',
+                'g[class*="legend"]',
+                'g[class*="Legend"]',
+                'text[class*="legend"]',
+                'text[class*="Legend"]',
+                '.pieLegend',
+                '.pie-chart-legend'
+            ];
+            
+            let analysis = `<h4>${testName} DOM Analysis:</h4>`;
+            
+            legendSelectors.forEach(selector => {
+                const elements = container.querySelectorAll(selector);
+                if (elements.length > 0) {
+                    analysis += `<p><strong>Found ${elements.length} elements with selector "${selector}":</strong></p>`;
+                    elements.forEach((el, index) => {
+                        analysis += `<p style="margin-left: 20px;">Element ${index + 1}: ${el.tagName} - Classes: ${el.className} - Text: ${el.textContent || 'No text'}</p>`;
+                    });
+                }
+            });
+            
+            // Check all text elements
+            const allTexts = container.querySelectorAll('text');
+            analysis += `<p><strong>All text elements (${allTexts.length}):</strong></p>`;
+            allTexts.forEach((text, index) => {
+                analysis += `<p style="margin-left: 20px;">Text ${index + 1}: "${text.textContent}" - Classes: ${text.className.baseVal || 'none'} - Style: ${text.style.cssText || 'none'}</p>`;
+            });
+            
+            // Check all g elements
+            const allGroups = container.querySelectorAll('g');
+            analysis += `<p><strong>All g elements (${allGroups.length}):</strong></p>`;
+            allGroups.forEach((g, index) => {
+                if (g.className.baseVal) {
+                    analysis += `<p style="margin-left: 20px;">Group ${index + 1}: Classes: ${g.className.baseVal}</p>`;
+                }
+            });
+            
+            analysisDiv.innerHTML += analysis + '<hr>';
+        }
+        
+        // Render charts when page loads
+        window.addEventListener('load', async () => {
+            await renderChart('chart1', chart1Content, 'Test 1');
+            await renderChart('chart2', chart2Content, 'Test 2');
+        });
+    </script>
+</body>
+</html>

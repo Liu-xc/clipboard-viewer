@@ -1,0 +1,64 @@
+/* Mermaid Chart 样式 - 确保图例可见 */
+
+/* 确保图例可见 - 基于实际 DOM 结构 */
+.mermaid-container g.legend,
+.mermaid-container g.legend *,
+.mermaid-container .legend,
+.mermaid-container .legend *,
+.mermaid-container text:not(.slice):not(.pieTitleText) {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* 图例文本样式 */
+.mermaid-container g.legend text,
+.mermaid-container text:not(.slice):not(.pieTitleText) {
+  fill: currentColor !important;
+  font-size: 14px !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+
+/* 暗色主题下的图例样式 */
+.dark .mermaid-container g.legend text,
+.dark .mermaid-container text:not(.slice):not(.pieTitleText) {
+  fill: #e5e7eb !important;
+  color: #e5e7eb !important;
+}
+
+/* 图例组容器样式 */
+.mermaid-container g.legend {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* 图例矩形和圆形标记 */
+.mermaid-container g.legend rect,
+.mermaid-container g.legend circle {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+/* 确保所有文本可见 */
+.mermaid-container text {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 强制显示饼图标签和图例 */
+.mermaid-container svg g[class*="pie"] text,
+.mermaid-container svg text[class*="legend"],
+.mermaid-container svg .legend text,
+.mermaid-container svg g.legend text {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  fill: currentColor !important;
+}
+
+.mermaid-container svg .node text,
+.mermaid-container svg .edgeLabel text {
+  fill: currentColor !important;
+}

@@ -51,6 +51,9 @@ importers:
         specifier: ^4.4.7
         version: 4.5.7(@types/react@18.3.24)(react@18.3.1)
     devDependencies:
+      '@storybook/addon-actions':
+        specifier: ^9.0.8
+        version: 9.0.8
       '@storybook/addon-essentials':
         specifier: ^8.6.14
         version: 8.6.14(@types/react@18.3.24)(storybook@8.6.14)
@@ -72,6 +75,9 @@ importers:
       '@storybook/react-vite':
         specifier: ^8.6.14
         version: 8.6.14(@storybook/test@8.6.14(storybook@8.6.14))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.50.2)(storybook@8.6.14)(typescript@5.9.2)(vite@5.4.20(@types/node@20.19.17))
+      '@storybook/test':
+        specifier: ^8.6.14
+        version: 8.6.14(storybook@8.6.14)
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.17
@@ -699,6 +705,9 @@ packages:
     resolution: {integrity: sha512-mDQxylxGGCQSK7tJPkD144J8jWh9IU9ziJMHfB84PKpI/V5ZgqMDnpr2bssTrUaGDqU5e1/z8KcRF+Melhs9pQ==}
     peerDependencies:
       storybook: ^8.6.14
+
+  '@storybook/addon-actions@9.0.8':
+    resolution: {integrity: sha512-LFePu7PPnWN0Il/uoUpmA5T0J0C7d6haJIbg0pXrjxW2MQVSYXE4S4LSUz8fOImltBDV3xAl6tLPYHFj6VcrOA==}
 
   '@storybook/addon-backgrounds@8.6.14':
     resolution: {integrity: sha512-l9xS8qWe5n4tvMwth09QxH2PmJbCctEvBAc1tjjRasAfrd69f7/uFK4WhwJAstzBTNgTc8VXI4w8ZR97i1sFbg==}
@@ -4209,6 +4218,8 @@ snapshots:
       polished: 4.3.1
       storybook: 8.6.14
       uuid: 9.0.1
+
+  '@storybook/addon-actions@9.0.8': {}
 
   '@storybook/addon-backgrounds@8.6.14(storybook@8.6.14)':
     dependencies:

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MermaidChart Component Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+        }
+        .test-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .mermaid-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        /* 复制项目中的 CSS 样式 */
+        .mermaid-container g.legend,
+        .mermaid-container g.legend *,
+        .mermaid-container .legend,
+        .mermaid-container .legend *,
+        .mermaid-container text:not(.slice):not(.pieTitleText) {
+          visibility: visible !important;
+          opacity: 1 !important;
+          display: block !important;
+        }
+        
+        .mermaid-container g.legend text,
+        .mermaid-container text:not(.slice):not(.pieTitleText) {
+          fill: currentColor !important;
+          font-size: 14px !important;
+          font-family: system-ui, -apple-system, sans-serif !important;
+        }
+        
+        .mermaid-container g.legend {
+          visibility: visible !important;
+          opacity: 1 !important;
+          display: block !important;
+        }
+        
+        .mermaid-container g.legend rect,
+        .mermaid-container g.legend circle {
+          visibility: visible !important;
+          opacity: 1 !important;
+          display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>MermaidChart Component Test</h1>
+    
+    <div class="test-container">
+        <h3>Test: Pie Chart with Legend (Simulating Component)</h3>
+        <div class="mermaid-container" id="component-test"></div>
+    </div>
+    
+    <div class="test-container">
+        <h3>DOM Analysis Results</h3>
+        <div id="analysis-results"></div>
+    </div>
+    
+    <script>
+        // 模拟 MermaidChart 组件的初始化配置
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'default',
+          securityLevel: 'loose',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: 14,
+          pie: {
+            useMaxWidth: true,
+            textPosition: 0.75,
+            legendPosition: 'bottom',
+            legendTextWrap: false,
+            showData: true,
+            showPercent: true,
+            showLegend: true
+          },
+          themeVariables: {
+            pieOuterStrokeWidth: '2px',
+            pieSectionTextColor: '#000000',
+            pieTitleTextSize: '16px',
+            pieTitleTextColor: '#000000',
+            pieLegendTextSize: '14px',
+            pieLegendTextColor: '#000000',
+            pieStrokeColor: '#000000',
+            pieStrokeWidth: '1px'
+          }
+        });
+        
+        async function testMermaidComponent() {
+            const content = `pie title Sample Data
+    "Category A" : 42.96
+    "Category B" : 50.05
+    "Category C" : 10.01
+    "Category D" : 5`;
+            
+            const elementRef = document.getElementById('component-test');
+            const diagramId = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            
+            try {
+                // 清空容器
+                elementRef.innerHTML = '';
+                
+                // 验证语法
+                await mermaid.parse(content);
+                
+                // 渲染图表
+                const { svg } = await mermaid.render(diagramId, content);
+                
+                elementRef.innerHTML = svg;
+                
+                // 模拟组件中的样式处理逻辑
+                const svgElement = elementRef.querySelector('svg');
+                if (svgElement) {
+                    svgElement.style.maxWidth = '100%';
+                    svgElement.style.height = 'auto';
+                    svgElement.style.display = 'block';
+                    svgElement.style.margin = '0 auto';
+                    
+                    // 强制显示所有图例和文本元素
+                    const allTextElements = svgElement.querySelectorAll('text, .legend, .pieCircle + text, .pieTitleText, .slice, g[class*="legend"], g[class*="pie"] text');
+                    allTextElements.forEach(element => {
+                      const el = element;
+                      if (el.style) {
+                        el.style.visibility = 'visible';
+                        el.style.opacity = '1';
+                        el.style.display = 'block';
+                      }
+                      el.removeAttribute('hidden');
+                      if (el.getAttribute('style') && el.getAttribute('style').includes('display: none')) {
+                        el.style.display = 'block';
+                      }
+                    });
+                    
+                    // 特别处理饼图图例
+                    const pieChartSelectors = [
+                      'g.legend',
+                      'g.legend text',
+                      'g.legend rect',
+                      'g.legend circle',
+                      'text:not(.slice):not(.pieTitleText)',
+                      '.legend',
+                      '.legend *',
+                      'g[class*="legend"]',
+                      'g[class*="legend"] *'
+                    ];
+                    
+                    pieChartSelectors.forEach(selector => {
+                      const elements = svgElement.querySelectorAll(selector);
+                      elements.forEach(label => {
+                        const labelEl = label;
+                        if (labelEl.style) {
+                          labelEl.style.fill = 'currentColor';
+                          labelEl.style.fontSize = '14px';
+                          labelEl.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+                          labelEl.style.visibility = 'visible';
+                          labelEl.style.opacity = '1';
+                          labelEl.style.display = 'block';
+                        }
+                        labelEl.removeAttribute('hidden');
+                      });
+                    });
+                    
+                    // 延迟处理图例
+                    setTimeout(() => {
+                      const legendGroups = svgElement.querySelectorAll('g.legend');
+                      legendGroups.forEach(legendGroup => {
+                        const groupEl = legendGroup;
+                        groupEl.style.visibility = 'visible';
+                        groupEl.style.opacity = '1';
+                        groupEl.style.display = 'block';
+                        groupEl.removeAttribute('hidden');
+                        
+                        const childElements = legendGroup.querySelectorAll('*');
+                        childElements.forEach(child => {
+                          const childEl = child;
+                          childEl.style.visibility = 'visible';
+                          childEl.style.opacity = '1';
+                          childEl.style.display = 'block';
+                          childEl.removeAttribute('hidden');
+                          
+                          if (child.tagName === 'text') {
+                            childEl.style.fill = 'currentColor';
+                            childEl.style.fontSize = '14px';
+                          }
+                        });
+                      });
+                      
+                      const legendTexts = svgElement.querySelectorAll('text:not(.slice):not(.pieTitleText)');
+                      legendTexts.forEach(text => {
+                        const textEl = text;
+                        const textContent = text.textContent || '';
+                        if (textContent && !textContent.includes('%')) {
+                          textEl.style.visibility = 'visible';
+                          textEl.style.opacity = '1';
+                          textEl.style.display = 'block';
+                          textEl.style.fill = 'currentColor';
+                          textEl.style.fontSize = '14px';
+                          textEl.removeAttribute('hidden');
+                        }
+                      });
+                      
+                      // 分析结果
+                      analyzeResults(svgElement);
+                    }, 100);
+                }
+                
+                console.log('Component test rendered successfully');
+                
+            } catch (error) {
+                console.error('Component test error:', error);
+                elementRef.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        function analyzeResults(svgElement) {
+            const analysisDiv = document.getElementById('analysis-results');
+            let analysis = '<h4>Component Test Analysis:</h4>';
+            
+            // 检查图例组
+            const legendGroups = svgElement.querySelectorAll('g.legend');
+            analysis += `<p><strong>Found ${legendGroups.length} legend groups (g.legend)</strong></p>`;
+            
+            // 检查图例文本
+            const legendTexts = svgElement.querySelectorAll('text:not(.slice):not(.pieTitleText)');
+            analysis += `<p><strong>Found ${legendTexts.length} legend text elements:</strong></p>`;
+            legendTexts.forEach((text, index) => {
+                const textContent = text.textContent || '';
+                if (textContent && !textContent.includes('%')) {
+                    analysis += `<p style="margin-left: 20px;">Legend ${index + 1}: "${textContent}" - Visible: ${text.style.visibility !== 'hidden'}</p>`;
+                }
+            });
+            
+            // 检查所有文本元素
+            const allTexts = svgElement.querySelectorAll('text');
+            analysis += `<p><strong>All text elements (${allTexts.length}):</strong></p>`;
+            allTexts.forEach((text, index) => {
+                const className = text.className.baseVal || 'none';
+                const textContent = text.textContent || '';
+                analysis += `<p style="margin-left: 20px;">Text ${index + 1}: "${textContent}" - Class: ${className} - Visible: ${text.style.visibility !== 'hidden'}</p>`;
+            });
+            
+            analysisDiv.innerHTML = analysis;
+        }
+        
+        // 页面加载时运行测试
+        window.addEventListener('load', testMermaidComponent);
+    </script>
+</body>
+</html>

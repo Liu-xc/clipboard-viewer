@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid v11 API Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <h1>Mermaid v11 API Test</h1>
+    
+    <h2>Test 1: Using mermaid.run()</h2>
+    <div class="mermaid">
+        pie title Pets adopted by volunteers
+            "Dogs" : 386
+            "Cats" : 85
+            "Rats" : 15
+    </div>
+    
+    <h2>Test 2: Using mermaid.render()</h2>
+    <div id="chart2"></div>
+    
+    <h2>Test 3: Using mermaid.parse() + mermaid.render()</h2>
+    <div id="chart3"></div>
+    
+    <script>
+        // Test different Mermaid v11 API approaches
+        async function testMermaidV11() {
+            console.log('Testing Mermaid v11 APIs...');
+            
+            // Initialize Mermaid with legend configuration
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'default',
+                pie: {
+                    legendPosition: 'bottom',
+                    showLegend: true
+                }
+            });
+            
+            console.log('Mermaid initialized');
+            
+            // Test 1: Using mermaid.run() - should work automatically
+            try {
+                await mermaid.run();
+                console.log('Test 1: mermaid.run() completed');
+            } catch (error) {
+                console.error('Test 1 error:', error);
+            }
+            
+            // Test 2: Using mermaid.render() with v11 API
+            const chart2Definition = `pie title "Favorite Animals"
+    "Dogs" : 42
+    "Cats" : 30
+    "Birds" : 15
+    "Fish" : 13`;
+            
+            try {
+                const { svg } = await mermaid.render('chart2-svg', chart2Definition);
+                document.getElementById('chart2').innerHTML = svg;
+                console.log('Test 2: mermaid.render() completed');
+            } catch (error) {
+                console.error('Test 2 error:', error);
+            }
+            
+            // Test 3: Using parse + render
+            const chart3Definition = `pie title "Programming Languages"
+    "JavaScript" : 45
+    "Python" : 35
+    "Java" : 20`;
+            
+            try {
+                // First parse to validate
+                const parseResult = await mermaid.parse(chart3Definition);
+                console.log('Parse result:', parseResult);
+                
+                if (parseResult) {
+                    const { svg } = await mermaid.render('chart3-svg', chart3Definition);
+                    document.getElementById('chart3').innerHTML = svg;
+                    console.log('Test 3: parse + render completed');
+                }
+            } catch (error) {
+                console.error('Test 3 error:', error);
+            }
+            
+            // Analyze DOM structure after rendering
+            setTimeout(() => {
+                console.log('\n=== DOM Analysis ===');
+                const allSvgs = document.querySelectorAll('svg');
+                allSvgs.forEach((svg, index) => {
+                    console.log(`SVG ${index + 1}:`);
+                    console.log('- Text elements:', svg.querySelectorAll('text').length);
+                    console.log('- G elements:', svg.querySelectorAll('g').length);
+                    console.log('- Legend elements:', svg.querySelectorAll('g.legend, .legend').length);
+                    console.log('- Pie elements:', svg.querySelectorAll('g[class*="pie"]').length);
+                    
+                    // Check for text content
+                    const texts = svg.querySelectorAll('text');
+                    const textContents = Array.from(texts).map(t => t.textContent).filter(t => t && t.trim());
+                    console.log('- Text contents:', textContents);
+                });
+            }, 1000);
+        }
+        
+        // Run tests when page loads
+        window.addEventListener('load', testMermaidV11);
+    </script>
+</body>
+</html>

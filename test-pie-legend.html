@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid Pie Chart Legend Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 20px 0;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        /* 强制显示图例的CSS */
+        .mermaid svg g.legend,
+        .mermaid svg g[class*="legend"] {
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+        .mermaid svg g.legend text,
+        .mermaid svg g[class*="legend"] text {
+            fill: #333 !important;
+            font-size: 14px !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+        .mermaid svg text:not(.slice):not(.pieTitleText) {
+            fill: #333 !important;
+            font-size: 14px !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mermaid v11 饼图图例测试</h1>
+        
+        <div class="test-section">
+            <h2>测试 1: 基本饼图</h2>
+            <div class="mermaid" id="pie1">
+                pie title 数据分布
+                    "A" : 386
+                    "B" : 85
+                    "C" : 150
+                    "D" : 50
+            </div>
+            <div class="debug-info" id="debug1"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>测试 2: 简单饼图</h2>
+            <div class="mermaid" id="pie2">
+                pie
+                    "苹果" : 42
+                    "香蕉" : 50
+                    "橙子" : 8
+            </div>
+            <div class="debug-info" id="debug2"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>测试 3: 多项饼图</h2>
+            <div class="mermaid" id="pie3">
+                pie title 销售数据
+                    "产品A" : 35
+                    "产品B" : 25
+                    "产品C" : 20
+                    "产品D" : 15
+                    "其他" : 5
+            </div>
+            <div class="debug-info" id="debug3"></div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化 Mermaid
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            pie: {
+                displayLegend: true,
+                legendPosition: 'bottom',
+                legendTextWrap: false
+            },
+            themeVariables: {
+                pieOuterStrokeWidth: '2px',
+                pieSectionTextSize: '14px',
+                pieLegendTextSize: '14px'
+            }
+        });
+
+        async function renderPieChart(elementId, content) {
+            const element = document.getElementById(elementId);
+            const debugElement = document.getElementById('debug' + elementId.slice(-1));
+            
+            try {
+                // 清空容器
+                element.innerHTML = '';
+                
+                // 使用 Mermaid v11 API
+                const parseResult = await mermaid.parse(content);
+                console.log(`${elementId} parse result:`, parseResult);
+                
+                if (!parseResult) {
+                    throw new Error('Invalid Mermaid syntax');
+                }
+                
+                // 渲染图表
+                const { svg } = await mermaid.render(`${elementId}-diagram`, content);
+                element.innerHTML = svg;
+                
+                // 分析 DOM 结构
+                setTimeout(() => {
+                    const svgElement = element.querySelector('svg');
+                    if (svgElement) {
+                        // 强制显示图例
+                        const allTextElements = svgElement.querySelectorAll('text, .legend, g[class*="legend"], g[class*="pie"] text');
+                        allTextElements.forEach(el => {
+                            const htmlEl = el;
+                            if (htmlEl.style) {
+                                htmlEl.style.visibility = 'visible';
+                                htmlEl.style.opacity = '1';
+                                htmlEl.style.display = 'block';
+                                htmlEl.style.fill = '#333';
+                            }
+                            htmlEl.removeAttribute('hidden');
+                        });
+                        
+                        // 处理图例组
+                        const legendGroups = svgElement.querySelectorAll('g.legend, g[class*="legend"]');
+                        legendGroups.forEach(group => {
+                            const groupEl = group;
+                            groupEl.style.visibility = 'visible';
+                            groupEl.style.opacity = '1';
+                            groupEl.style.display = 'block';
+                            groupEl.removeAttribute('hidden');
+                            
+                            // 处理子元素
+                            const children = group.querySelectorAll('*');
+                            children.forEach(child => {
+                                const childEl = child;
+                                childEl.style.visibility = 'visible';
+                                childEl.style.opacity = '1';
+                                childEl.style.display = 'block';
+                                childEl.removeAttribute('hidden');
+                                
+                                if (child.tagName === 'text') {
+                                    childEl.style.fill = '#333';
+                                    childEl.style.fontSize = '14px';
+                                }
+                            });
+                        });
+                        
+                        // 调试信息
+                        const allTexts = svgElement.querySelectorAll('text');
+                        const legendElements = svgElement.querySelectorAll('g.legend, g[class*="legend"]');
+                        const gElements = svgElement.querySelectorAll('g');
+                        
+                        debugElement.innerHTML = `
+                            <strong>DOM 分析:</strong><br>
+                            - 总文本元素: ${allTexts.length}<br>
+                            - 图例组元素: ${legendElements.length}<br>
+                            - 所有g元素: ${gElements.length}<br>
+                            - 文本内容: ${Array.from(allTexts).map(t => t.textContent).filter(t => t && !t.includes('%')).join(', ')}<br>
+                            - 图例类名: ${Array.from(legendElements).map(g => g.className.baseVal || g.getAttribute('class')).join(', ')}
+                        `;
+                        
+                        console.log(`${elementId} DOM analysis:`, {
+                            texts: allTexts.length,
+                            legends: legendElements.length,
+                            groups: gElements.length,
+                            textContents: Array.from(allTexts).map(t => t.textContent)
+                        });
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error(`Error rendering ${elementId}:`, error);
+                element.innerHTML = `<div style="color: red; padding: 20px;">Error: ${error.message}</div>`;
+                debugElement.innerHTML = `<strong>错误:</strong> ${error.message}`;
+            }
+        }
+
+        // 渲染所有饼图
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('开始渲染饼图...');
+            
+            await renderPieChart('pie1', `pie title 数据分布
+    "A" : 386
+    "B" : 85
+    "C" : 150
+    "D" : 50`);
+            
+            await renderPieChart('pie2', `pie
+    "苹果" : 42
+    "香蕉" : 50
+    "橙子" : 8`);
+            
+            await renderPieChart('pie3', `pie title 销售数据
+    "产品A" : 35
+    "产品B" : 25
+    "产品C" : 20
+    "产品D" : 15
+    "其他" : 5`);
+            
+            console.log('所有饼图渲染完成');
+        });
+    </script>
+</body>
+</html>

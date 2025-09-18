@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Pie Chart Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+        }
+        .chart {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Pie Chart with Legend Test</h1>
+    
+    <div class="chart">
+        <h3>Test: Basic Pie Chart</h3>
+        <div id="pie-chart"></div>
+    </div>
+    
+    <div class="chart">
+        <h3>Test: Pie Chart with showData</h3>
+        <div id="pie-chart-data"></div>
+    </div>
+    
+    <script>
+        // Initialize Mermaid v11
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            pie: {
+                useMaxWidth: true,
+                textPosition: 0.75,
+                legendPosition: 'bottom',
+                showLegend: true,
+                showData: true,
+                showPercent: true
+            }
+        });
+        
+        async function renderPieChart() {
+            // Test 1: Basic pie chart
+            const pieContent1 = `pie title Sample Data
+    "Category A" : 42.96
+    "Category B" : 50.05
+    "Category C" : 10.01
+    "Category D" : 5`;
+            
+            // Test 2: Pie chart with showData
+            const pieContent2 = `pie showData title Revenue Distribution
+    "Product Sales" : 45
+    "Services" : 30
+    "Licensing" : 15
+    "Other" : 10`;
+            
+            try {
+                // Render first chart
+                const { svg: svg1 } = await mermaid.render('pie1', pieContent1);
+                document.getElementById('pie-chart').innerHTML = svg1;
+                
+                // Render second chart
+                const { svg: svg2 } = await mermaid.render('pie2', pieContent2);
+                document.getElementById('pie-chart-data').innerHTML = svg2;
+                
+                console.log('Both charts rendered successfully');
+                
+                // Analyze DOM structure
+                setTimeout(() => {
+                    console.log('=== DOM Analysis ===');
+                    
+                    [document.getElementById('pie-chart'), document.getElementById('pie-chart-data')].forEach((container, index) => {
+                        console.log(`Chart ${index + 1} analysis:`);
+                        
+                        // Check for legend elements
+                        const legendElements = container.querySelectorAll('text');
+                        console.log(`Found ${legendElements.length} text elements`);
+                        
+                        legendElements.forEach((text, i) => {
+                            console.log(`Text ${i + 1}: "${text.textContent}" - Classes: ${text.className.baseVal || 'none'}`);
+                        });
+                        
+                        // Check for groups
+                        const groups = container.querySelectorAll('g');
+                        console.log(`Found ${groups.length} g elements`);
+                        
+                        groups.forEach((g, i) => {
+                            if (g.className.baseVal) {
+                                console.log(`Group ${i + 1}: Classes: ${g.className.baseVal}`);
+                            }
+                        });
+                    });
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error rendering charts:', error);
+            }
+        }
+        
+        // Render when page loads
+        window.addEventListener('load', renderPieChart);
+    </script>
+</body>
+</html>
