@@ -4,10 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   IconClipboard,
   IconSettings,
-  IconHeart,
-  IconPhoto,
-  IconFile,
-  IconCode
+  IconHeart
 } from '@tabler/icons-react';
 
 interface NavItem {
@@ -31,21 +28,6 @@ const Sidebar: React.FC = () => {
       label: '收藏夹',
       icon: <IconHeart size={18} />,
       path: '/favorites'
-    },
-    {
-      label: '图片',
-      icon: <IconPhoto size={18} />,
-      path: '/images'
-    },
-    {
-      label: '文件',
-      icon: <IconFile size={18} />,
-      path: '/files'
-    },
-    {
-      label: '代码',
-      icon: <IconCode size={18} />,
-      path: '/code'
     },
     {
       label: '设置',
