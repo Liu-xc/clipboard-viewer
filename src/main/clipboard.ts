@@ -49,24 +49,24 @@ export class ClipboardService extends EventEmitter {
   private async checkClipboardChange() {
     try {
       const currentContent = clipboard.readText();
-      console.log('检查剪贴板变化, 当前内容长度:', currentContent.length);
-      
+      // console.log('检查剪贴板变化, 当前内容长度:', currentContent.length);
+
       // 检查内容是否发生变化
-      console.log('上次内容长度:', this.lastClipboardContent.length, '当前内容是否不同:', currentContent !== this.lastClipboardContent, '当前内容是否非空:', currentContent.trim() !== '');
+      // console.log('上次内容长度:', this.lastClipboardContent.length, '当前内容是否不同:', currentContent !== this.lastClipboardContent, '当前内容是否非空:', currentContent.trim() !== '');
       if (currentContent !== this.lastClipboardContent && currentContent.trim() !== '') {
         this.lastClipboardContent = currentContent;
-        
+
         // 创建剪贴板项目
         const clipboardItem = await this.createClipboardItem(currentContent);
-        
+
         // 保存到存储
         await this.storageService.addClipboardItem(clipboardItem);
-        
+
         // 发出变化事件
         console.log('准备发出clipboardChanged事件:', clipboardItem);
         this.emit('clipboardChanged', clipboardItem);
         console.log('已发出clipboardChanged事件');
-        
+
         console.log('Clipboard changed:', clipboardItem.preview);
       }
     } catch (error) {
@@ -102,43 +102,43 @@ export class ClipboardService extends EventEmitter {
     if (content.includes('<') && content.includes('>')) {
       return 'html';
     }
-    
+
     // 检查是否是文件路径
     if (content.match(/^[a-zA-Z]:\\|^\//) && content.includes('.')) {
       return 'file';
     }
-    
+
     // 检查是否是图片（base64 或 URL）
     if (content.startsWith('data:image/') || content.match(/\.(jpg|jpeg|png|gif|bmp|svg)$/i)) {
       return 'image';
     }
-    
+
     // 默认为文本
     return 'text';
   }
 
   private generatePreview(content: string, type: ClipboardItem['type']): string {
     const maxLength = 100;
-    
+
     switch (type) {
       case 'html':
         // 移除 HTML 标签，只保留文本内容
         const textContent = content.replace(/<[^>]*>/g, '').trim();
-        return textContent.length > maxLength 
+        return textContent.length > maxLength
           ? textContent.substring(0, maxLength) + '...'
           : textContent;
-      
+
       case 'file':
         // 提取文件名
         const fileName = content.split(/[\\/]/).pop() || content;
         return `文件: ${fileName}`;
-      
+
       case 'image':
         return '图片内容';
-      
+
       case 'text':
       default:
-        return content.length > maxLength 
+        return content.length > maxLength
           ? content.substring(0, maxLength) + '...'
           : content;
     }
@@ -151,10 +151,10 @@ export class ClipboardService extends EventEmitter {
       if (content.trim() === '') {
         return null;
       }
-      
+
       const type = this.detectContentType(content);
       const preview = this.generatePreview(content, type);
-      
+
       return {
         id: this.generateId(content),
         type,
@@ -183,18 +183,18 @@ export class ClipboardService extends EventEmitter {
             clipboard.writeText(content);
           }
           break;
-        
+
         case 'html':
           clipboard.writeHTML(content);
           break;
-        
+
         case 'text':
         case 'file':
         default:
           clipboard.writeText(content);
           break;
       }
-      
+
       // 更新最后的剪贴板内容，避免触发变化检测
       this.lastClipboardContent = clipboard.readText();
     } catch (error) {

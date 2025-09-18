@@ -31,12 +31,17 @@ import {
   IconFile,
   IconCode,
   IconRefresh,
-  IconClipboard
+  IconClipboard,
+  IconMarkdown,
+  IconEye
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import { useNavigate } from 'react-router-dom';
 import type { ClipboardItem } from '../types';
+import { detectMarkdown } from '../../../../utils/markdownUtils';
 
 const ClipboardHistory: React.FC = () => {
+  const navigate = useNavigate();
   const [clipboardItems, setClipboardItems] = useState<ClipboardItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -198,6 +203,14 @@ const ClipboardHistory: React.FC = () => {
     }
   };
 
+  const handleViewMarkdown = (item: ClipboardItem) => {
+    navigate(`/markdown/${item.id}`);
+  };
+
+  const isMarkdown = (item: ClipboardItem) => {
+    return item.type === 'text' && detectMarkdown(item.content);
+  };
+
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -240,6 +253,11 @@ const ClipboardHistory: React.FC = () => {
                item.type === 'image' ? '图片' :
                item.type === 'file' ? '文件' : '代码'}
             </Badge>
+            {isMarkdown(item) && (
+              <Badge variant="light" size="sm" color="blue" leftSection={<IconMarkdown size={12} />}>
+                Markdown
+              </Badge>
+            )}
             {item.favorite && (
               <IconHeartFilled size={14} color="red" />
             )}
@@ -264,6 +282,14 @@ const ClipboardHistory: React.FC = () => {
                 >
                   复制
                 </Menu.Item>
+                {isMarkdown(item) && (
+                  <Menu.Item
+                    leftSection={<IconEye size={14} />}
+                    onClick={() => handleViewMarkdown(item)}
+                  >
+                    查看 Markdown
+                  </Menu.Item>
+                )}
                 <Menu.Item
                   leftSection={item.favorite ? <IconHeartFilled size={14} /> : <IconHeart size={14} />}
                   onClick={() => handleToggleFavorite(item)}

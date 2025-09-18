@@ -34,6 +34,8 @@ graph TD
 ## 2. Technology Description
 
 - Frontend: React@18 + TypeScript@5 + Mantine@7 + Vite@5
+- Markdown Rendering: react-markdown@9 + remark-gfm + rehype-highlight
+- Chart Rendering: mermaid@10 + @mermaid-js/mermaid
 - Desktop: Electron@28
 - Window Management: electron-window-state, always-on-top
 - Build Tools: electron-builder
@@ -46,6 +48,7 @@ graph TD
 | / | 主界面，显示剪贴板历史列表和搜索功能 |
 | /settings | 设置页面，应用配置和快捷键管理 |
 | /preview/:id | 详情预览页面，查看和编辑剪贴板内容 |
+| /markdown/:id | Markdown查看页，专业渲染markdown内容和图表 |
 
 ## 4. API definitions
 
@@ -81,6 +84,22 @@ ipcRenderer.invoke('floatingBall:toggle')
 ipcRenderer.invoke('mainWindow:show')
 ipcRenderer.invoke('mainWindow:hide')
 ```
+
+**检测markdown内容**
+```typescript
+ipcRenderer.invoke('clipboard:isMarkdown', content)
+```
+
+Request:
+| Param Name | Param Type | isRequired | Description |
+|------------|------------|------------|-------------|
+| content | string | true | 待检测的文本内容 |
+
+Response:
+| Param Name | Param Type | Description |
+|------------|------------|-------------|
+| isMarkdown | boolean | 是否为markdown格式 |
+| confidence | number | 检测置信度(0-1) |
 
 **设置应用配置**
 ```typescript
@@ -173,13 +192,19 @@ erDiagram
 // 剪贴板项目类型
 interface ClipboardItem {
   id: string;
-  type: 'text' | 'image' | 'file' | 'html';
+  type: 'text' | 'image' | 'file' | 'html' | 'markdown';
   content: string;
   preview: string;
   timestamp: number;
   favorite: boolean;
   tags: string[];
   size?: number;
+  isMarkdown?: boolean;
+  markdownMeta?: {
+    hasCharts: boolean;
+    chartTypes: string[];
+    headings: Array<{ level: number; text: string; id: string }>;
+  };
 }
 
 // 应用配置类型
@@ -239,11 +264,21 @@ clipboard-viewer/
 │   │   ├── main/            # 主窗口
 │   │   │   ├── src/
 │   │   │   │   ├── components/  # React 组件
-│   │   │   │   ├── pages/       # 页面组件
-│   │   │   │   ├── hooks/       # 自定义 Hooks
-│   │   │   │   ├── types/       # TypeScript 类型
-│   │   │   │   ├── utils/       # 工具函数
-│   │   │   │   └── App.tsx      # 应用根组件
+│   │   │   │   ├── markdown/    # Markdown相关组件
+│   │   │   │   │   ├── MarkdownRenderer.tsx  # 主渲染器
+│   │   │   │   │   ├── MermaidChart.tsx      # 图表组件
+│   │   │   │   │   ├── TableOfContents.tsx  # 目录导航
+│   │   │   │   │   └── CodeBlock.tsx        # 代码块组件
+│   │   │   ├── pages/       # 页面组件
+│   │   │   │   ├── MarkdownViewer.tsx       # Markdown查看页
+│   │   │   ├── hooks/       # 自定义 Hooks
+│   │   │   │   ├── useMarkdownDetection.ts  # Markdown检测
+│   │   │   │   └── useMermaidRenderer.ts    # 图表渲染
+│   │   │   ├── types/       # TypeScript 类型
+│   │   │   ├── utils/       # 工具函数
+│   │   │   │   ├── markdownParser.ts        # Markdown解析
+│   │   │   │   └── chartExtractor.ts        # 图表提取
+│   │   │   └── App.tsx      # 应用根组件
 │   │   │   ├── index.html       # HTML 模板
 │   │   │   └── vite.config.ts   # Vite 配置
 │   │   └── floating/        # 悬浮球窗口

@@ -8,6 +8,7 @@ import { useMantineColorScheme } from '@mantine/core';
 import Sidebar from './components/Sidebar';
 import ClipboardHistory from './pages/ClipboardHistory';
 import Settings from './pages/Settings';
+import MarkdownViewer from '../../../pages/MarkdownViewer';
 import type { AppConfig } from './types';
 
 function App() {
@@ -155,6 +156,7 @@ function App() {
           <Route path="/" element={<ClipboardHistory />} />
           <Route path="/history" element={<ClipboardHistory />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/markdown/:id" element={<MarkdownViewer />} />
         </Routes>
       </AppShell.Main>
     </AppShell>
