@@ -199,7 +199,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   }
 
   return (
-    <Container size="xl" py="md">
+    <Container size="xl" py="xs">
       <PageHeader
         title={directTitle || markdownContent?.title || 'Markdown查看器'}
         subtitle={
@@ -286,11 +286,11 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
       />
 
       {/* 主要内容区域 */}
-      <Grid gutter="lg">
+      <Grid gutter="lg" style={{ minHeight: 'calc(100vh - 140px)' }}>
         {/* 目录侧边栏 */}
         {showToc && tableOfContents.length > 0 && (
           <Grid.Col span={3}>
-            <Paper withBorder p="md" style={{ position: 'sticky', top: '1rem' }}>
+            <Paper withBorder p="md" style={{ position: 'sticky', top: '1rem', maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
               <Title order={4} size="sm" mb="md">
                 目录
               </Title>
@@ -315,7 +315,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
 
         {/* 主要内容 */}
         <Grid.Col span={showToc && tableOfContents.length > 0 ? 9 : 12}>
-          <Paper withBorder p="xl">
+          <Paper withBorder p="xl" style={{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
             {showRawContent ? (
               <Code block>
                 {clipboardItem?.content || directContent}

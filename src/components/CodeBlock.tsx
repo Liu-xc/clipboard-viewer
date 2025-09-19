@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CodeBlock as CodeBlockType } from '../../shared/types';
 import { IconCopy, IconCheck, IconDownload, IconEye, IconEyeOff } from '@tabler/icons-react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css';
 
 interface CodeBlockProps {
   language: string;
@@ -20,6 +22,17 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   const [copied, setCopied] = useState(false);
   const [showNumbers, setShowNumbers] = useState(showLineNumbers);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const codeRef = useRef<HTMLElement>(null);
+
+  // 应用语法高亮
+  useEffect(() => {
+    if (codeRef.current) {
+      // 清除之前的高亮
+      codeRef.current.removeAttribute('data-highlighted');
+      // 应用新的高亮
+      hljs.highlightElement(codeRef.current);
+    }
+  }, [content, language]);
 
   // 复制代码到剪贴板
   const handleCopy = async () => {
@@ -212,23 +225,30 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       {/* 代码内容 */}
       <div className="relative">
         <pre className={`overflow-x-auto p-4 text-sm leading-relaxed ${isCollapsed ? 'max-h-60' : ''} ${isCollapsed ? 'overflow-y-hidden' : ''}`}>
-          <code className={`language-${language} block`}>
-            {lines.map((line, index) => (
-              <div key={index} className="flex">
-                {showNumbers && (
+          {showNumbers ? (
+            <code className={`language-${language} block`}>
+              {lines.map((line, index) => (
+                <div key={index} className="flex">
                   <span 
                     className="select-none text-gray-400 dark:text-gray-600 mr-4 text-right flex-shrink-0 font-mono"
                     style={{ minWidth: `${maxLineNumberWidth * 0.6 + 0.5}rem` }}
                   >
                     {index + 1}
                   </span>
-                )}
-                <span className="flex-1">
-                  {line || '\u00A0'} {/* 使用不间断空格保持空行 */}
-                </span>
-              </div>
-            ))}
-          </code>
+                  <span className="flex-1">
+                    {line || '\u00A0'} {/* 使用不间断空格保持空行 */}
+                  </span>
+                </div>
+              ))}
+            </code>
+          ) : (
+            <code 
+              ref={codeRef}
+              className={`language-${language} block hljs`}
+            >
+              {content}
+            </code>
+          )}
         </pre>
         
         {/* 折叠状态下的渐变遮罩 */}

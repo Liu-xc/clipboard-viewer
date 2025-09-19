@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell, Burger, Group, Text, ActionIcon, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -154,7 +154,7 @@ function App() {
 
       <AppShell.Main>
         <Routes>
-          <Route path="/" element={<ClipboardHistory />} />
+          <Route path="/" element={<Navigate to="/history" replace />} />
           <Route path="/history" element={<ClipboardHistory />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/markdown/:id" element={<MarkdownViewer />} />
