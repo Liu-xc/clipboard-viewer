@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MermaidChart } from './MermaidChart';
+import MermaidChartV2 from './MermaidChartV2';
 
-const meta: Meta<typeof MermaidChart> = {
+const meta: Meta<typeof MermaidChartV2> = {
   title: 'Components/MermaidChart',
-  component: MermaidChart,
+  component: MermaidChartV2,
   parameters: {
     layout: 'padded',
     docs: {
@@ -29,7 +29,7 @@ const meta: Meta<typeof MermaidChart> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof MermaidChart>;
+type Story = StoryObj<typeof MermaidChartV2>;
 
 const flowchartContent = `flowchart TD
     A[Start] --> B{Is it working?}

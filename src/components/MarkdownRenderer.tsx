@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import { MarkdownContent, MarkdownRenderOptions } from '../../shared/types';
-import { MermaidChart } from './MermaidChart';
+import MermaidChartV2 from './MermaidChartV2';
 import { CodeBlock } from './CodeBlock';
 import 'highlight.js/styles/github.css';
 
@@ -41,7 +41,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         // 检查是否是Mermaid图表
         if (language === 'mermaid' && renderOptions.enableMermaid) {
           return (
-            <MermaidChart
+            <MermaidChartV2
               content={String(children).replace(/\n$/, '')}
               className="my-4"
             />

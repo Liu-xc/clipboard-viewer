@@ -17,26 +17,9 @@ const MermaidChart: React.FC<MermaidChartProps> = ({ content, title, className =
   const elementRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [diagramId] = useState(`mermaid-${Math.random().toString(36).substr(2, 9)}`);
+  const [diagramId] = useState(() => `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
 
   useEffect(() => {
-    // 初始化 Mermaid
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'default',
-      securityLevel: 'loose',
-      pie: {
-        displayLegend: true,
-        legendPosition: 'bottom',
-        legendTextWrap: false
-      },
-      themeVariables: {
-        pieOuterStrokeWidth: '2px',
-        pieSectionTextSize: '14px',
-        pieLegendTextSize: '14px'
-      }
-    });
-
     const renderDiagram = async () => {
       if (!elementRef.current || !content.trim()) {
         setIsLoading(false);
@@ -50,100 +33,51 @@ const MermaidChart: React.FC<MermaidChartProps> = ({ content, title, className =
         // 清空容器
         elementRef.current.innerHTML = '';
 
-        // 验证和渲染 - 使用 Mermaid v11 API
-        const parseResult = await mermaid.parse(content);
-        if (!parseResult) {
-          throw new Error('Invalid Mermaid syntax');
-        }
+        // 初始化 Mermaid - 参考测试文件的完整配置
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'default',
+          securityLevel: 'loose',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: 14,
+          pie: {
+            useMaxWidth: true,
+            textPosition: 0.75,
+            legendPosition: 'bottom',
+            legendTextWrap: false,
+            showData: true,
+            showPercent: true,
+            showLegend: true
+          },
+          themeVariables: {
+            pieOuterStrokeWidth: '2px',
+            pieSectionTextColor: '#000000',
+            pieTitleTextSize: '16px',
+            pieTitleTextColor: '#000000',
+            pieLegendTextSize: '14px',
+            pieLegendTextColor: '#000000',
+            pieStrokeColor: '#000000',
+            pieStrokeWidth: '1px'
+          }
+        });
+
+        // 验证语法
+        await mermaid.parse(content);
         
         // 渲染图表
         const { svg } = await mermaid.render(diagramId, content);
         
         if (elementRef.current) {
           elementRef.current.innerHTML = svg;
-        }
-        
-        // 添加响应式样式和图例修复
-        const svgElement = elementRef.current.querySelector('svg');
-        if (svgElement) {
-          svgElement.style.maxWidth = '100%';
-          svgElement.style.height = 'auto';
-          svgElement.style.display = 'block';
-          svgElement.style.margin = '0 auto';
-            
-          // 强制显示所有图例和文本元素
-          const allTextElements = svgElement.querySelectorAll('text, .legend, g[class*="legend"], g[class*="pie"] text');
-          allTextElements.forEach(element => {
-            const el = element as HTMLElement;
-            if (el.style) {
-              el.style.visibility = 'visible';
-              el.style.opacity = '1';
-              el.style.display = 'block';
-              el.style.fill = 'currentColor';
-            }
-            el.removeAttribute('hidden');
-          });
-            
-          // 延迟处理图例，确保 DOM 完全渲染
-          setTimeout(() => {
-            // 基于测试结果，Mermaid v11 的图例结构已经正确生成
-            // 主要问题可能是样式覆盖，所以我们重点处理样式
-            
-            // 1. 处理所有图例相关的组元素
-            const allGroups = svgElement.querySelectorAll('g');
-            allGroups.forEach(group => {
-              const groupEl = group as HTMLElement;
-              // 确保所有组元素都可见
-              groupEl.style.visibility = 'visible';
-              groupEl.style.opacity = '1';
-              groupEl.style.display = 'block';
-              groupEl.removeAttribute('hidden');
-            });
-            
-            // 2. 处理所有文本元素，确保图例文本可见
-            const allTexts = svgElement.querySelectorAll('text');
-            allTexts.forEach(text => {
-              const textEl = text as HTMLElement;
-              const textContent = text.textContent || '';
-              
-              // 为所有文本设置基本样式
-              textEl.style.visibility = 'visible';
-              textEl.style.opacity = '1';
-              textEl.style.display = 'block';
-              textEl.removeAttribute('hidden');
-              
-              // 为图例文本（非百分比标签）设置更明显的样式
-              if (textContent && !textContent.includes('%') && !textContent.includes('title')) {
-                textEl.style.fill = '#333';
-                textEl.style.fontSize = '14px';
-                textEl.style.fontWeight = '500';
-              } else if (textContent.includes('%')) {
-                // 饼图切片标签
-                textEl.style.fill = '#666';
-                textEl.style.fontSize = '12px';
-              }
-            });
-            
-            // 3. 特别处理可能的图例容器
-            const possibleLegendContainers = svgElement.querySelectorAll('g[class*="legend"], g.legend, g[transform*="translate"]');
-            possibleLegendContainers.forEach(container => {
-              const containerEl = container as HTMLElement;
-              containerEl.style.visibility = 'visible';
-              containerEl.style.opacity = '1';
-              containerEl.style.display = 'block';
-              containerEl.removeAttribute('hidden');
-              
-              // 处理容器内的所有子元素
-              const children = container.querySelectorAll('*');
-              children.forEach(child => {
-                const childEl = child as HTMLElement;
-                childEl.style.visibility = 'visible';
-                childEl.style.opacity = '1';
-                childEl.style.display = 'block';
-                childEl.removeAttribute('hidden');
-              });
-            });
-          }, 150);
+          
+          // 添加基本的响应式样式
+          const svgElement = elementRef.current.querySelector('svg');
+          if (svgElement) {
+            svgElement.style.maxWidth = '100%';
+            svgElement.style.height = 'auto';
+            svgElement.style.display = 'block';
+            svgElement.style.margin = '0 auto';
+          }
         }
       } catch (err) {
         console.error('Mermaid rendering error:', err);
@@ -154,7 +88,7 @@ const MermaidChart: React.FC<MermaidChartProps> = ({ content, title, className =
     };
 
     renderDiagram();
-  }, [content]);
+  }, [content, diagramId]);
 
   // 检测图表类型
   const detectDiagramType = (content: string): MermaidDiagram['type'] => {
