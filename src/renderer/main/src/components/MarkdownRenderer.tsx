@@ -5,6 +5,7 @@ import rehypeHighlight from 'rehype-highlight';
 import { MarkdownContent, MarkdownRenderOptions } from '@shared/types';
 import MermaidChartV2 from './MermaidChartV2';
 import { CodeBlock } from '../../../../components/CodeBlock';
+import { detectMermaid } from '../../../../utils/markdownUtils';
 import 'highlight.js/styles/github.css';
 
 interface MarkdownRendererProps {
@@ -202,6 +203,21 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       />
     )
   }), [renderOptions]);
+
+  // 检测是否为纯 mermaid 内容
+  const isPureMermaid = useMemo(() => detectMermaid(content), [content]);
+
+  // 如果是纯 mermaid 内容，直接渲染 MermaidChartV2
+  if (isPureMermaid && renderOptions.enableMermaid) {
+    return (
+      <div className={`markdown-renderer ${className}`}>
+        <MermaidChartV2
+          content={content}
+          className="my-4"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`markdown-renderer prose prose-lg max-w-none dark:prose-invert ${className}`}>

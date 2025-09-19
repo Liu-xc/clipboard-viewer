@@ -4,7 +4,7 @@
   "description": "A cross-platform desktop clipboard manager built with Electron, React, TypeScript and Mantine",
   "main": "dist/main/main/index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:renderer\" \"npm run dev:floating\" \"wait-on http://localhost:3000 http://localhost:5174 && npm run dev:electron\"",
+    "dev": "npm run build && concurrently \"npm run dev:renderer\" \"npm run dev:floating\" \"wait-on http://localhost:3000 http://localhost:5174 && npm run dev:electron\"",
     "dev:renderer": "vite --config src/renderer/main/vite.config.ts",
     "dev:floating": "vite --config src/renderer/floating/vite.config.ts --port 5174",
     "dev:electron": "npm run build:preload && electron .",

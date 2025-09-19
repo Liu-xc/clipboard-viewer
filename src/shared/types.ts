@@ -1,7 +1,7 @@
 // 共享类型定义
 export interface ClipboardItem {
   id: string;
-  type: 'text' | 'image' | 'file' | 'html';
+  type: 'text' | 'image' | 'file' | 'html' | 'mermaid';
   content: string;
   timestamp: number;
   size?: number;
@@ -114,3 +114,41 @@ export const IPC_CHANNELS = {
 } as const;
 
 export type IpcChannel = typeof IPC_CHANNELS[keyof typeof IPC_CHANNELS];
+
+// Markdown相关类型定义
+export interface MarkdownContent {
+  id: string;
+  content: string;
+  title?: string;
+  hasCodeBlocks: boolean;
+  hasMermaidDiagrams: boolean;
+  hasImages: boolean;
+  wordCount: number;
+  estimatedReadTime: number; // 预估阅读时间（分钟）
+}
+
+// 目录结构类型
+export interface TableOfContentsItem {
+  id: string;
+  title: string;
+  level: number; // 1-6 对应 h1-h6
+  anchor: string;
+  children?: TableOfContentsItem[];
+}
+
+// Mermaid图表类型
+export interface MermaidDiagram {
+  id: string;
+  type: 'flowchart' | 'sequence' | 'gantt' | 'pie' | 'gitgraph' | 'mindmap' | 'timeline' | 'other';
+  content: string;
+  title?: string;
+}
+
+// 代码块类型
+export interface CodeBlock {
+  id: string;
+  language: string;
+  content: string;
+  filename?: string;
+  lineNumbers?: boolean;
+}

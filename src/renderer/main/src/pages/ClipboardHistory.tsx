@@ -98,6 +98,38 @@ const ClipboardHistory: React.FC = () => {
         } else {
           setError(response.error || '获取剪贴板历史失败');
         }
+      } else {
+        // 在 web 环境中提供测试数据
+        const mockData: ClipboardItem[] = [
+          {
+            id: 'test-mermaid-1',
+            content: 'graph TD\n    A[开始] --> B[处理]\n    B --> C[结束]',
+            preview: '流程图: 开始 → 处理 → 结束',
+            type: 'mermaid',
+            timestamp: Date.now() - 1000 * 60 * 5,
+            favorite: false,
+            tags: ['测试', 'mermaid']
+          },
+          {
+            id: 'test-text-1',
+            content: '# 这是一个标题\n\n这是一些普通文本内容。',
+            preview: '# 这是一个标题\n\n这是一些普通文本内容。',
+            type: 'text',
+            timestamp: Date.now() - 1000 * 60 * 10,
+            favorite: true,
+            tags: ['markdown']
+          },
+          {
+            id: 'test-mermaid-2',
+            content: 'pie title 数据分布\n    "类型A" : 42\n    "类型B" : 30\n    "类型C" : 28',
+            preview: '饼图: 数据分布',
+            type: 'mermaid',
+            timestamp: Date.now() - 1000 * 60 * 15,
+            favorite: false,
+            tags: ['图表']
+          }
+        ];
+        setClipboardItems(mockData);
       }
     } catch (error) {
       console.error('Failed to load clipboard history:', error);
@@ -199,6 +231,8 @@ const ClipboardHistory: React.FC = () => {
         return <IconFile size={16} />;
       case 'code':
         return <IconCode size={16} />;
+      case 'mermaid':
+        return <IconMarkdown size={16} />;
       default:
         return null;
     }
@@ -244,7 +278,7 @@ const ClipboardHistory: React.FC = () => {
   });
 
   const handleCardClick = (item: ClipboardItem) => {
-    if (item.type === 'text') {
+    if (item.type === 'text' || item.type === 'mermaid') {
       navigate(`/markdown/${item.id}`);
     }
   };
@@ -257,7 +291,7 @@ const ClipboardHistory: React.FC = () => {
         padding="md" 
         radius="md" 
         className="clipboard-item"
-        style={{ cursor: item.type === 'text' ? 'pointer' : 'default' }}
+        style={{ cursor: (item.type === 'text' || item.type === 'mermaid') ? 'pointer' : 'default' }}
         onClick={() => handleCardClick(item)}
       >
         <Group justify="space-between" mb="xs">
@@ -266,11 +300,17 @@ const ClipboardHistory: React.FC = () => {
             <Badge variant="light" size="sm">
               {item.type === 'text' ? '文本' : 
                item.type === 'image' ? '图片' :
-               item.type === 'file' ? '文件' : '代码'}
+               item.type === 'file' ? '文件' :
+               item.type === 'mermaid' ? 'Mermaid' : '代码'}
             </Badge>
             {isMarkdown(item) && (
               <Badge variant="light" size="sm" color="blue" leftSection={<IconMarkdown size={12} />}>
                 Markdown
+              </Badge>
+            )}
+            {item.type === 'mermaid' && (
+              <Badge variant="light" size="sm" color="green" leftSection={<IconMarkdown size={12} />}>
+                图表
               </Badge>
             )}
             {item.favorite && (
@@ -301,12 +341,12 @@ const ClipboardHistory: React.FC = () => {
                 >
                   复制
                 </Menu.Item>
-                {isMarkdown(item) && (
+                {(isMarkdown(item) || item.type === 'mermaid') && (
                   <Menu.Item
                     leftSection={<IconEye size={14} />}
                     onClick={() => handleViewMarkdown(item)}
                   >
-                    查看 Markdown
+                    {item.type === 'mermaid' ? '查看图表' : '查看 Markdown'}
                   </Menu.Item>
                 )}
                 <Menu.Item

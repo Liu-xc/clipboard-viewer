@@ -1,4 +1,82 @@
-import { MarkdownContent, TableOfContentsItem, MermaidDiagram, CodeBlock } from '../../shared/types';
+import { MarkdownContent, TableOfContentsItem, MermaidDiagram, CodeBlock } from '../shared/types';
+
+/**
+ * 检测文本是否为纯 Mermaid 语法
+ * @param content 要检测的文本内容
+ * @returns 是否为纯 Mermaid 语法
+ */
+export function detectMermaid(content: string): boolean {
+  if (!content || typeof content !== 'string') {
+    return false;
+  }
+
+  const trimmed = content.trim();
+  if (trimmed.length === 0) {
+    return false;
+  }
+
+  // 如果包含 markdown 代码块标记，则不是纯 mermaid
+  if (trimmed.includes('```')) {
+    return false;
+  }
+
+  // Mermaid 图表类型关键词
+  const mermaidKeywords = [
+    'graph',
+    'flowchart',
+    'sequenceDiagram',
+    'pie',
+    'gantt',
+    'gitgraph',
+    'mindmap',
+    'timeline',
+    'classDiagram',
+    'stateDiagram',
+    'erDiagram',
+    'journey',
+    'quadrantChart',
+    'requirement',
+    'c4Context'
+  ];
+
+  // 检查是否以 mermaid 关键词开头
+  const startsWithKeyword = mermaidKeywords.some(keyword => 
+    trimmed.toLowerCase().startsWith(keyword.toLowerCase())
+  );
+
+  if (!startsWithKeyword) {
+    return false;
+  }
+
+  // Mermaid 特有的语法结构
+  const mermaidPatterns = [
+    /-->/, // 流程图箭头
+    /->>/, // 序列图箭头
+    /participant/, // 序列图参与者
+    /title/, // 标题
+    /\[.*?\]/, // 节点标签
+    /\{.*?\}/, // 节点样式
+    /\|.*?\|/, // 饼图标签
+    /section/, // 甘特图章节
+    /dateFormat/, // 甘特图日期格式
+    /axisFormat/, // 甘特图轴格式
+    /class/, // 类图
+    /state/, // 状态图
+    /note/, // 注释
+    /loop/, // 循环
+    /alt/, // 选择
+    /opt/, // 可选
+    /par/, // 并行
+    /and/, // 并且
+    /else/, // 否则
+    /end/ // 结束
+  ];
+
+  // 检查是否包含 mermaid 特有语法
+  const hasValidSyntax = mermaidPatterns.some(pattern => pattern.test(trimmed));
+
+  return hasValidSyntax;
+}
 
 /**
  * 检测文本是否为Markdown格式

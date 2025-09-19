@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import { StorageService } from './storage';
 import type { ClipboardItem } from '../shared/types';
+import { detectMermaid } from '../utils/markdownUtils';
 
 export class ClipboardService extends EventEmitter {
   private storageService: StorageService;
@@ -98,6 +99,16 @@ export class ClipboardService extends EventEmitter {
   }
 
   private detectContentType(content: string): ClipboardItem['type'] {
+    // 检查是否包含 mermaid 代码块
+    if (content.includes('```mermaid')) {
+      return 'mermaid';
+    }
+
+    // 检查是否是纯 Mermaid 语法
+    if (detectMermaid(content)) {
+      return 'mermaid';
+    }
+
     // 检查是否是 HTML
     if (content.includes('<') && content.includes('>')) {
       return 'html';
@@ -121,6 +132,27 @@ export class ClipboardService extends EventEmitter {
     const maxLength = 100;
 
     switch (type) {
+      case 'mermaid':
+        // 检测 Mermaid 图表类型并生成预览
+        const trimmed = content.trim().toLowerCase();
+        let diagramType = 'Mermaid 图表';
+        
+        if (trimmed.startsWith('graph') || trimmed.startsWith('flowchart')) {
+          diagramType = '流程图';
+        } else if (trimmed.startsWith('sequencediagram')) {
+          diagramType = '序列图';
+        } else if (trimmed.startsWith('pie')) {
+          diagramType = '饼图';
+        } else if (trimmed.startsWith('gantt')) {
+          diagramType = '甘特图';
+        } else if (trimmed.startsWith('classdiagram')) {
+          diagramType = '类图';
+        } else if (trimmed.startsWith('statediagram')) {
+          diagramType = '状态图';
+        }
+        
+        return `${diagramType}: ${content.substring(0, maxLength - diagramType.length - 2)}...`;
+
       case 'html':
         // 移除 HTML 标签，只保留文本内容
         const textContent = content.replace(/<[^>]*>/g, '').trim();
@@ -188,6 +220,7 @@ export class ClipboardService extends EventEmitter {
           clipboard.writeHTML(content);
           break;
 
+        case 'mermaid':
         case 'text':
         case 'file':
         default:
