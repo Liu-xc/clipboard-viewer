@@ -18,7 +18,7 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   user-select: none;
   -webkit-user-select: none;
-  -webkit-app-region: no-drag;
+  -webkit-app-region: drag;
 }
 
 #root {
@@ -27,6 +27,9 @@ html, body {
   align-items: center;
   justify-content: center;
   background: transparent;
+  -webkit-app-region: drag;
+  /* 为拖动区域添加一些内边距 */
+  padding: 10px;
 }
 
 /* 悬浮球容器 */
@@ -43,6 +46,7 @@ html, body {
   border: 2px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  -webkit-app-region: no-drag;
 }
 
 .floating-ball:hover {

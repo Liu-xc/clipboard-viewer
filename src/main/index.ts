@@ -153,19 +153,38 @@ class ClipboardViewerApp {
 
     // 窗口控制
     ipcMain.handle('mainWindow:show', () => {
-      this.windowManager.showMainWindow();
+      try {
+        this.windowManager.showMainWindow();
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
     });
 
     ipcMain.handle('mainWindow:hide', () => {
-      this.windowManager.hideMainWindow();
+      try {
+        this.windowManager.hideMainWindow();
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
     });
 
     ipcMain.handle('floatingBall:toggle', () => {
-      this.windowManager.toggleFloatingBall();
+      try {
+        this.windowManager.toggleFloatingBall();
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
     });
 
-    ipcMain.handle('floatingBall:updatePosition', (_, x, y) => {
-      this.windowManager.updateFloatingBallPosition(x, y);
+    ipcMain.handle('floatingBall:updatePosition', (_, position) => {
+      if (position && typeof position === 'object' && 'x' in position && 'y' in position) {
+        this.windowManager.updateFloatingBallPosition(position.x, position.y);
+      } else {
+        console.error('Invalid position parameter:', position);
+      }
     });
 
     // 配置管理

@@ -17,8 +17,7 @@ const App: React.FC = () => {
     size: 60,
     position: { x: 100, y: 100 }
   });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  // 移除拖动状态，现在由CSS的-webkit-app-region: drag处理
   const [hasNewClipboard, setHasNewClipboard] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('auto');
 
@@ -64,8 +63,6 @@ const App: React.FC = () => {
 
   // 处理点击事件
   const handleClick = useCallback(async () => {
-    if (isDragging) return;
-    
     try {
       if (window.electronAPI) {
         const response = await window.electronAPI.showMainWindow();
@@ -85,105 +82,9 @@ const App: React.FC = () => {
         color: 'red'
       });
     }
-  }, [isDragging]);
-
-  // 处理鼠标按下事件
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
   }, []);
 
-  // 处理鼠标移动事件
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
-    
-    const newPosition = {
-      x: e.screenX - dragOffset.x,
-      y: e.screenY - dragOffset.y
-    };
-    
-    setConfig(prev => ({ ...prev, position: newPosition }));
-    
-    // 更新窗口位置
-    if (window.electronAPI) {
-      window.electronAPI.updateFloatingBallPosition?.(newPosition);
-    }
-  }, [isDragging, dragOffset]);
-
-  // 处理鼠标释放事件
-  const handleMouseUp = useCallback(() => {
-    if (isDragging) {
-      setIsDragging(false);
-      
-      // 窗口吸边逻辑
-      const snapToEdge = () => {
-        const screenWidth = window.screen.width;
-        const screenHeight = window.screen.height;
-        const ballSize = config.size;
-        const snapThreshold = 50; // 吸边阈值
-        
-        let newX = config.position.x;
-        let newY = config.position.y;
-        
-        // 左右边缘吸附
-        if (config.position.x < snapThreshold) {
-          newX = 0;
-        } else if (config.position.x > screenWidth - ballSize - snapThreshold) {
-          newX = screenWidth - ballSize;
-        }
-        
-        // 上下边缘吸附
-        if (config.position.y < snapThreshold) {
-          newY = 0;
-        } else if (config.position.y > screenHeight - ballSize - snapThreshold) {
-          newY = screenHeight - ballSize;
-        }
-        
-        // 如果位置发生变化，更新位置
-        if (newX !== config.position.x || newY !== config.position.y) {
-          const snappedPosition = { x: newX, y: newY };
-          setConfig(prev => ({ ...prev, position: snappedPosition }));
-          
-          // 更新窗口位置
-          if (window.electronAPI) {
-            window.electronAPI.updateFloatingBallPosition?.(snappedPosition);
-          }
-          
-          return snappedPosition;
-        }
-        
-        return config.position;
-      };
-      
-      const finalPosition = snapToEdge();
-      
-      // 保存位置到配置
-      if (window.electronAPI) {
-        window.electronAPI.updateConfig?.({
-          floatingBall: { ...config, position: finalPosition }
-        });
-      }
-    }
-  }, [isDragging, config]);
-
-  // 添加全局鼠标事件监听
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  // 移除所有拖动相关的事件处理，现在由CSS的-webkit-app-region: drag处理窗口拖动
 
   // 获取主题类名
   const getThemeClass = () => {
@@ -206,15 +107,14 @@ const App: React.FC = () => {
       openDelay={1000}
     >
       <div
-        className={`floating-ball ${getThemeClass()} ${isDragging ? 'dragging' : ''} ${hasNewClipboard ? 'pulse' : ''}`}
+        className={`floating-ball ${getThemeClass()} ${hasNewClipboard ? 'pulse' : ''}`}
         style={{
           width: config.size,
           height: config.size,
           opacity: config.opacity,
-          cursor: isDragging ? 'grabbing' : 'pointer'
+          cursor: 'pointer'
         }}
         onClick={handleClick}
-        onMouseDown={handleMouseDown}
         role="button"
         tabIndex={0}
         aria-label="剪贴板查看器悬浮球"

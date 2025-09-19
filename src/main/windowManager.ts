@@ -90,9 +90,12 @@ export class WindowManager {
     const defaultX = width - config.floatingBall.size - 20;
     const defaultY = height - config.floatingBall.size - 20;
 
+    // 窗口大小比悬浮球稍大，留出拖动区域
+    const windowSize = config.floatingBall.size + 20; // 增加20px的拖动区域
+    
     this.floatingBallWindow = new BrowserWindow({
-      width: config.floatingBall.size,
-      height: config.floatingBall.size,
+      width: windowSize,
+      height: windowSize,
       x: config.floatingBall.position.x || defaultX,
       y: config.floatingBall.position.y || defaultY,
       frame: false,
@@ -104,7 +107,7 @@ export class WindowManager {
       minimizable: false,
       maximizable: false,
       closable: false,
-      focusable: false,
+      focusable: true,
       show: config.floatingBall.enabled,
       webPreferences: {
         nodeIntegration: false,
@@ -135,12 +138,7 @@ export class WindowManager {
       await this.floatingBallWindow.loadFile(path.join(__dirname, '../../renderer/floating/index.html'));
     }
 
-    // 点击悬浮球显示主窗口
-    this.floatingBallWindow.webContents.on('before-input-event', (event, input) => {
-      if (input.type === 'mouseDown' && (input as any).button === 'left') {
-        this.showMainWindow();
-      }
-    });
+    // 移除主进程的点击事件监听，让渲染进程处理所有鼠标事件
 
     // 保存位置变化
     this.floatingBallWindow.on('moved', async () => {
@@ -201,7 +199,12 @@ export class WindowManager {
   // 更新悬浮球位置
   updateFloatingBallPosition(x: number, y: number) {
     if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
-      this.floatingBallWindow.setPosition(x, y);
+      // 验证参数并取整
+      const validX = typeof x === 'number' && !isNaN(x) ? Math.round(x) : 0;
+      const validY = typeof y === 'number' && !isNaN(y) ? Math.round(y) : 0;
+      
+      console.log(`Setting floating ball position: x=${validX}, y=${validY}`);
+      this.floatingBallWindow.setPosition(validX, validY);
     }
   }
 
