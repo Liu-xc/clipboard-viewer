@@ -34,8 +34,18 @@ export class WindowManager {
         nodeIntegration: false,
         contextIsolation: true,
         preload: path.join(__dirname, '../../preload/preload/index.js'),
-        webSecurity: true,
-        allowRunningInsecureContent: false
+        webSecurity: !isDev,
+        allowRunningInsecureContent: isDev,
+        // 开发模式下禁用所有缓存
+        ...(isDev && {
+          additionalArguments: [
+            '--disable-http-cache',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--no-sandbox',
+            '--disable-dev-shm-usage'
+          ]
+        })
       }
     });
 
@@ -47,6 +57,7 @@ export class WindowManager {
       await this.mainWindow.loadURL('http://localhost:3000');
       this.mainWindow.webContents.openDevTools();
     } else {
+      console.log('加载主窗口内容:', path.join(__dirname, '../../renderer/main/index.html'));
       await this.mainWindow.loadFile(path.join(__dirname, '../../renderer/main/index.html'));
     }
 
@@ -54,6 +65,11 @@ export class WindowManager {
     this.mainWindow.once('ready-to-show', () => {
       this.mainWindow?.show();
     });
+
+    // 开发模式下添加强制刷新机制
+    if (isDev) {
+      this.setupDevRefreshMechanism();
+    }
 
     // 窗口关闭时隐藏而不是销毁
     this.mainWindow.on('close', (event) => {
@@ -94,7 +110,17 @@ export class WindowManager {
         nodeIntegration: false,
         contextIsolation: true,
         preload: path.join(__dirname, '../../preload/preload/index.js'),
-        webSecurity: true
+        webSecurity: !isDev,
+        // 开发模式下禁用所有缓存
+        ...(isDev && {
+          additionalArguments: [
+            '--disable-http-cache',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--no-sandbox',
+            '--disable-dev-shm-usage'
+          ]
+        })
       }
     });
 
@@ -105,6 +131,7 @@ export class WindowManager {
     if (isDev) {
       await this.floatingBallWindow.loadURL('http://localhost:5174');
     } else {
+      console.log('加载悬浮球内容:', path.join(__dirname, '../../renderer/floating/index.html'));
       await this.floatingBallWindow.loadFile(path.join(__dirname, '../../renderer/floating/index.html'));
     }
 
@@ -171,12 +198,78 @@ export class WindowManager {
     return this.floatingBallWindow;
   }
 
+  // 更新悬浮球位置
+  updateFloatingBallPosition(x: number, y: number) {
+    if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
+      this.floatingBallWindow.setPosition(x, y);
+    }
+  }
+
+  // 窗口吸边辅助方法
+  snapFloatingBallToEdge(currentPosition: { x: number; y: number }, ballSize: number): { x: number; y: number } {
+    const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+    const snapThreshold = 50; // 吸边阈值
+
+    let newX = currentPosition.x;
+    let newY = currentPosition.y;
+
+    // 左右边缘吸附
+    if (currentPosition.x < snapThreshold) {
+      newX = 0;
+    } else if (currentPosition.x > screenWidth - ballSize - snapThreshold) {
+      newX = screenWidth - ballSize;
+    }
+
+    // 上下边缘吸附
+    if (currentPosition.y < snapThreshold) {
+      newY = 0;
+    } else if (currentPosition.y > screenHeight - ballSize - snapThreshold) {
+      newY = screenHeight - ballSize;
+    }
+
+    return { x: newX, y: newY };
+  }
+
   destroyAllWindows() {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.destroy();
     }
     if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
       this.floatingBallWindow.destroy();
+    }
+  }
+
+  // 开发模式下的强制刷新机制
+  private setupDevRefreshMechanism() {
+    if (!isDev) return;
+
+    // 注册快捷键 Cmd+R 强制刷新主窗口
+    globalShortcut.register('CommandOrControl+R', () => {
+      if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+        console.log('强制刷新主窗口');
+        this.mainWindow.reload();
+      }
+    });
+
+    // 注册快捷键 Cmd+Shift+R 强制刷新并清除缓存
+    globalShortcut.register('CommandOrControl+Shift+R', () => {
+      if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+        console.log('强制刷新主窗口并清除缓存');
+        this.mainWindow.webContents.session.clearCache();
+        this.mainWindow.reload();
+      }
+    });
+
+    // 监听webContents的did-fail-load事件，自动重试
+    if (this.mainWindow) {
+      this.mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+        console.log('页面加载失败，尝试重新加载:', errorDescription);
+        setTimeout(() => {
+          if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+            this.mainWindow.reload();
+          }
+        }, 1000);
+      });
     }
   }
 }

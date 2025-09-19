@@ -21,5 +21,11 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    host: 'localhost',
+    strictPort: true,
+    hmr: {
+      port: 5175,
+    },
+    cors: true,
   },
 });

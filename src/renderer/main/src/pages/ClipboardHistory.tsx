@@ -450,7 +450,7 @@ const ClipboardHistory: React.FC = () => {
   }
 
   return (
-    <Container size="md" py="md">
+    <Container size="xl" py="xs">
       <Stack gap="md">
         <Group justify="space-between">
           <Title order={2}>剪贴板历史</Title>

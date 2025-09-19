@@ -44,6 +44,7 @@ export interface ElectronAPI {
   showMainWindow: () => Promise<void>;
   hideMainWindow: () => Promise<void>;
   toggleFloatingBall: () => Promise<void>;
+  updateFloatingBallPosition: (x: number, y: number) => Promise<void>;
   
   // 配置管理
   getConfig: () => Promise<IPCResponse<AppConfig>>;

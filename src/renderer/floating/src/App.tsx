@@ -121,10 +121,52 @@ const App: React.FC = () => {
     if (isDragging) {
       setIsDragging(false);
       
+      // 窗口吸边逻辑
+      const snapToEdge = () => {
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const ballSize = config.size;
+        const snapThreshold = 50; // 吸边阈值
+        
+        let newX = config.position.x;
+        let newY = config.position.y;
+        
+        // 左右边缘吸附
+        if (config.position.x < snapThreshold) {
+          newX = 0;
+        } else if (config.position.x > screenWidth - ballSize - snapThreshold) {
+          newX = screenWidth - ballSize;
+        }
+        
+        // 上下边缘吸附
+        if (config.position.y < snapThreshold) {
+          newY = 0;
+        } else if (config.position.y > screenHeight - ballSize - snapThreshold) {
+          newY = screenHeight - ballSize;
+        }
+        
+        // 如果位置发生变化，更新位置
+        if (newX !== config.position.x || newY !== config.position.y) {
+          const snappedPosition = { x: newX, y: newY };
+          setConfig(prev => ({ ...prev, position: snappedPosition }));
+          
+          // 更新窗口位置
+          if (window.electronAPI) {
+            window.electronAPI.updateFloatingBallPosition?.(snappedPosition);
+          }
+          
+          return snappedPosition;
+        }
+        
+        return config.position;
+      };
+      
+      const finalPosition = snapToEdge();
+      
       // 保存位置到配置
       if (window.electronAPI) {
         window.electronAPI.updateConfig?.({
-          floatingBall: config
+          floatingBall: { ...config, position: finalPosition }
         });
       }
     }

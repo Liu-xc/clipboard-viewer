@@ -34,6 +34,7 @@ const electronAPI: ElectronAPI = {
   showMainWindow: () => ipcRenderer.invoke('mainWindow:show'),
   hideMainWindow: () => ipcRenderer.invoke('mainWindow:hide'),
   toggleFloatingBall: () => ipcRenderer.invoke('floatingBall:toggle'),
+  updateFloatingBallPosition: (x: number, y: number) => ipcRenderer.invoke('floatingBall:updatePosition', x, y),
   
   // 配置管理
   getConfig: () => ipcRenderer.invoke('app:getConfig'),

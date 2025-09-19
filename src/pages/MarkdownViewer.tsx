@@ -26,7 +26,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   const [markdownContent, setMarkdownContent] = useState<MarkdownContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showToc, setShowToc] = useState(true);
+  const [showToc, setShowToc] = useState(false);
   const [showRawContent, setShowRawContent] = useState(false);
   const [renderOptions, setRenderOptions] = useState<MarkdownRenderOptions>({
     enableSyntaxHighlight: true,
@@ -199,9 +199,8 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   }
 
   return (
-    <Container size="xl" py="xs">
+    <Container size="xl" py={0}>
       <PageHeader
-        title={directTitle || markdownContent?.title || 'Markdown查看器'}
         subtitle={
           clipboardItem ? (
             <Group gap="xs" c="dimmed">
@@ -315,7 +314,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
 
         {/* 主要内容 */}
         <Grid.Col span={showToc && tableOfContents.length > 0 ? 9 : 12}>
-          <Paper withBorder p="xl" style={{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
+          <Paper withBorder p="md" style={{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
             {showRawContent ? (
               <Code block>
                 {clipboardItem?.content || directContent}

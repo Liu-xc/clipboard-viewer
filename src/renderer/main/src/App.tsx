@@ -10,6 +10,7 @@ import ClipboardHistory from './pages/ClipboardHistory';
 import Settings from './pages/Settings';
 import MarkdownViewer from '../../../pages/MarkdownViewer';
 import MermaidTest from '../../../pages/MermaidTest';
+
 import type { AppConfig } from './types';
 
 function App() {
@@ -104,7 +105,7 @@ function App() {
         breakpoint: 'sm',
         collapsed: { mobile: !opened }
       }}
-      padding="md"
+      padding="0"
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
@@ -116,7 +117,7 @@ function App() {
               size="sm"
             />
             <Text size="lg" fw={600}>
-              剪贴板查看器
+              剪贴板查看器 - HMR测试
             </Text>
           </Group>
           
@@ -152,13 +153,14 @@ function App() {
         <Sidebar />
       </AppShell.Navbar>
 
-      <AppShell.Main>
+      <AppShell.Main style={{ paddingTop: 0 }}>
         <Routes>
           <Route path="/" element={<Navigate to="/history" replace />} />
           <Route path="/history" element={<ClipboardHistory />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/markdown/:id" element={<MarkdownViewer />} />
           <Route path="/mermaid-test" element={<MermaidTest />} />
+
         </Routes>
       </AppShell.Main>
     </AppShell>

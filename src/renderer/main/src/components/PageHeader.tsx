@@ -27,7 +27,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   };
 
   return (
-    <Group justify="space-between" mb="lg">
+    <Group justify="space-between" align="center" mb={0}>
       <Group>
         <Tooltip label="返回">
           <ActionIcon

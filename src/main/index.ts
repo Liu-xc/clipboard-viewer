@@ -164,6 +164,10 @@ class ClipboardViewerApp {
       this.windowManager.toggleFloatingBall();
     });
 
+    ipcMain.handle('floatingBall:updatePosition', (_, x, y) => {
+      this.windowManager.updateFloatingBallPosition(x, y);
+    });
+
     // 配置管理
     ipcMain.handle('app:getConfig', async () => {
       try {

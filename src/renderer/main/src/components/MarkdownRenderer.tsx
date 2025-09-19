@@ -84,6 +84,14 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     );
   }, [renderOptions.enableMermaid]);
 
+  // 使用useRef来保持H1过滤状态
+  const firstH1FoundRef = useRef(false);
+  
+  // 重置H1过滤状态当内容改变时
+  useEffect(() => {
+    firstH1FoundRef.current = false;
+  }, [content]);
+
   // 配置 @uiw/react-md-editor 的预览选项
   const previewOptions = useMemo(() => {
     return {
@@ -91,6 +99,15 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         code: Code
       },
       rehypeRewrite: (node: any, index: number, parent: any) => {
+        // 过滤掉第一个H1标题，避免与PageHeader重复
+        if (node.tagName === 'h1') {
+          if (!firstH1FoundRef.current) {
+            firstH1FoundRef.current = true;
+            // 完全移除第一个H1标题 - 返回false来移除节点
+            return false;
+          }
+        }
+        
         // 处理mermaid代码块
         if (node.tagName === 'code' && parent && parent.tagName === 'pre') {
           const className = node.properties?.className;
@@ -100,7 +117,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         }
       }
     };
-  }, [Code]);
+    }, [Code, content]);
 
   // 初始化mermaid，根据主题动态设置
   useEffect(() => {

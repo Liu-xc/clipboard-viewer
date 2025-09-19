@@ -155,14 +155,14 @@ const Settings: React.FC = () => {
 
   if (loading || !config) {
     return (
-      <Container size="md" py="xl">
+      <Container size="md" py="xs">
         <Text>加载设置中...</Text>
       </Container>
     );
   }
 
   return (
-    <Container size="md" py="md">
+    <Container size="md" py="xs">
       <Stack gap="lg">
         <PageHeader
           title="应用设置"

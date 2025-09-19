@@ -22,5 +22,14 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: 'localhost',
+    strictPort: true,
+    hmr: {
+      port: 3001,
+      host: 'localhost',
+      protocol: 'ws',
+      overlay: true,
+    },
+    cors: true,
   },
 });
