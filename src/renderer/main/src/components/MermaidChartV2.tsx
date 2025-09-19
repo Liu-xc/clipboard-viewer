@@ -17,6 +17,10 @@ const MermaidChartV2: React.FC<MermaidChartV2Props> = ({ content, title, classNa
       startOnLoad: false,
       theme: 'default',
       securityLevel: 'loose',
+      pie: {
+        displayLegend: true,
+        legendPosition: 'bottom'
+      }
     });
 
     // 渲染图表
