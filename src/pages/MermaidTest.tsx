@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Paper, Title, Stack, Text } from '@mantine/core';
-import { MarkdownRenderer } from '../components/MarkdownRenderer';
+import { MarkdownRenderer } from '../renderer/main/src/components/MarkdownRenderer';
 
 const testMermaidContent = `# Mermaid 图表测试
 

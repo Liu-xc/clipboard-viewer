@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IconChevronDown, IconChevronRight, IconList, IconEye, IconEyeOff } from '@tabler/icons-react';
-import { TableOfContentsItem } from '../../shared/types';
+import { TableOfContentsItem } from '@shared/types';
 
 interface TableOfContentsProps {
   items: TableOfContentsItem[];

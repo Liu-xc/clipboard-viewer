@@ -33,7 +33,7 @@ export class WindowManager {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, '../../preload/preload/index.js'),
+        preload: path.join(__dirname, '../../preload/index.js'),
         webSecurity: true,
         allowRunningInsecureContent: false
       }
@@ -93,7 +93,7 @@ export class WindowManager {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, '../../preload/preload/index.js'),
+        preload: path.join(__dirname, '../../preload/index.js'),
         webSecurity: true
       }
     });

@@ -39,7 +39,7 @@ import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import type { ClipboardItem } from '../types';
 import { detectMarkdown } from '../../../../utils/markdownUtils';
-import { MarkdownRenderer } from '../../../../components/MarkdownRenderer';
+import { MarkdownRenderer } from '../components/MarkdownRenderer';
 
 const ClipboardHistory: React.FC = () => {
   const navigate = useNavigate();

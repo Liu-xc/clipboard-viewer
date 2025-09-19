@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import TableOfContents from './TableOfContents';
-import { TableOfContentsItem } from '../../shared/types';
+import { TableOfContentsItem } from '@shared/types';
 
 const meta: Meta<typeof TableOfContents> = {
   title: 'Components/TableOfContents',

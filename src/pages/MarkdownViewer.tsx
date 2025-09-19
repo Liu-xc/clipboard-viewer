@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Group, ActionIcon, Tooltip, Button, Menu, Text, LoadingOverlay, Alert, Grid, Paper, Title, Stack, Anchor, Code, TypographyStylesProvider } from '@mantine/core';
 import { IconDownload, IconShare, IconClock, IconFileText, IconMenu2, IconEye, IconEyeOff } from '@tabler/icons-react';
-import { MarkdownRenderer } from '../components/MarkdownRenderer';
-import TableOfContents from '../components/TableOfContents';
-import PageHeader from '../components/PageHeader';
+import { MarkdownRenderer } from '../renderer/main/src/components/MarkdownRenderer';
+import TableOfContents from '../renderer/main/src/components/TableOfContents';
+import PageHeader from '../renderer/main/src/components/PageHeader';
 import { ClipboardItem, MarkdownContent, MarkdownRenderOptions } from '../../shared/types';
 import { detectMarkdown, parseMarkdownContent, generateTableOfContents } from '../utils/markdownUtils';
 

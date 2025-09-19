@@ -78,9 +78,24 @@ importers:
       '@storybook/test':
         specifier: ^8.6.14
         version: 8.6.14(storybook@8.6.14)
+      '@types/babel__core':
+        specifier: ^7.20.5
+        version: 7.20.5
+      '@types/babel__generator':
+        specifier: ^7.27.0
+        version: 7.27.0
+      '@types/babel__template':
+        specifier: ^7.4.4
+        version: 7.4.4
+      '@types/babel__traverse':
+        specifier: ^7.28.0
+        version: 7.28.0
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.17
+      '@types/plist':
+        specifier: ^3.0.5
+        version: 3.0.5
       '@types/react':
         specifier: ^18.2.45
         version: 18.3.24
@@ -4671,7 +4686,6 @@ snapshots:
     dependencies:
       '@types/node': 20.19.17
       xmlbuilder: 15.1.1
-    optional: true
 
   '@types/prop-types@15.7.15': {}
 

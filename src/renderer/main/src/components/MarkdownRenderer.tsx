@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import { MarkdownContent, MarkdownRenderOptions } from '../../shared/types';
+import { MarkdownContent, MarkdownRenderOptions } from '@shared/types';
 import MermaidChartV2 from './MermaidChartV2';
-import { CodeBlock } from './CodeBlock';
+import { CodeBlock } from '../../../../components/CodeBlock';
 import 'highlight.js/styles/github.css';
 
 interface MarkdownRendererProps {
