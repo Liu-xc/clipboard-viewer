@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import { MarkdownContent, MarkdownRenderOptions } from '@shared/types';
-import MermaidChartV2 from './MermaidChartV2';
-import { CodeBlock } from '../../../../components/CodeBlock';
+import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
+import MDEditor from '@uiw/react-md-editor';
+import { MarkdownContent, MarkdownRenderOptions } from '../../../../../shared/types';
 import { detectMermaid } from '../../../../utils/markdownUtils';
-import 'highlight.js/styles/github.css';
+import { useMantineColorScheme } from '@mantine/core';
+import '@uiw/react-md-editor/markdown-editor.css';
+import './MarkdownRenderer.css';
+import { getCodeString } from 'rehype-rewrite';
+import mermaid from 'mermaid';
 
 interface MarkdownRendererProps {
   content: string;
@@ -27,207 +27,105 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   options = {},
   className = ''
 }) => {
+  const { colorScheme } = useMantineColorScheme();
+  const theme = colorScheme === 'dark' ? 'dark' : 'light';
   const renderOptions = useMemo(() => ({
     ...defaultOptions,
     ...options
   }), [options]);
 
-  const components = useMemo(() => ({
-    // 自定义代码块渲染
-    code: ({ node, inline, className, children, ...props }: any) => {
-      const match = /language-(\w+)/.exec(className || '');
-      const language = match ? match[1] : '';
-      
-      if (!inline && language) {
-        // 检查是否是Mermaid图表
-        if (language === 'mermaid' && renderOptions.enableMermaid) {
-          return (
-            <MermaidChartV2
-              content={String(children).replace(/\n$/, '')}
-              className="my-4"
-            />
-          );
-        }
-        
-        // 普通代码块
-        if (renderOptions.enableSyntaxHighlight) {
-          return (
-            <CodeBlock
-              language={language}
-              content={String(children).replace(/\n$/, '')}
-              className="my-4"
-            />
-          );
+
+
+  // 生成随机ID用于mermaid图表
+  const randomid = () => parseInt(String(Math.random() * 1e15), 10).toString(36);
+
+  // 自定义代码块组件，支持mermaid渲染
+  const Code = useCallback(({ inline, children = [], className, ...props }: any) => {
+    const demoid = useRef(`dome${randomid()}`);
+    const [container, setContainer] = useState<HTMLDivElement | null>(null);
+    const isMermaid = className && /^language-mermaid/.test(className.toLocaleLowerCase());
+    const code = getCodeString(props.node?.children || children);
+
+    const reRender = async () => {
+      if (container && isMermaid && renderOptions.enableMermaid) {
+        try {
+          const str = await mermaid.render(demoid.current, code);
+          container.innerHTML = str.svg;
+        } catch (error) {
+          container.innerHTML = `<pre style="color: red;">${error}</pre>`;
         }
       }
-      
-      // 行内代码
-      return (
-        <code className={`${className} bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm`} {...props}>
-          {children}
-        </code>
-      );
-    },
-    
-    // 自定义标题渲染，添加锚点
-    h1: ({ children, ...props }: any) => {
-      const id = String(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      return (
-        <h1 id={id} className="text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-100" {...props}>
-          {children}
-        </h1>
-      );
-    },
-    h2: ({ children, ...props }: any) => {
-      const id = String(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      return (
-        <h2 id={id} className="text-2xl font-semibold mt-6 mb-3 text-gray-900 dark:text-gray-100" {...props}>
-          {children}
-        </h2>
-      );
-    },
-    h3: ({ children, ...props }: any) => {
-      const id = String(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      return (
-        <h3 id={id} className="text-xl font-semibold mt-5 mb-2 text-gray-900 dark:text-gray-100" {...props}>
-          {children}
-        </h3>
-      );
-    },
-    h4: ({ children, ...props }: any) => {
-      const id = String(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      return (
-        <h4 id={id} className="text-lg font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100" {...props}>
-          {children}
-        </h4>
-      );
-    },
-    h5: ({ children, ...props }: any) => {
-      const id = String(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      return (
-        <h5 id={id} className="text-base font-semibold mt-3 mb-2 text-gray-900 dark:text-gray-100" {...props}>
-          {children}
-        </h5>
-      );
-    },
-    h6: ({ children, ...props }: any) => {
-      const id = String(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      return (
-        <h6 id={id} className="text-sm font-semibold mt-3 mb-2 text-gray-900 dark:text-gray-100" {...props}>
-          {children}
-        </h6>
-      );
-    },
-    
-    // 自定义段落样式
-    p: ({ children, ...props }: any) => (
-      <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed" {...props}>
-        {children}
-      </p>
-    ),
-    
-    // 自定义列表样式
-    ul: ({ children, ...props }: any) => (
-      <ul className="mb-4 ml-6 list-disc text-gray-700 dark:text-gray-300" {...props}>
-        {children}
-      </ul>
-    ),
-    ol: ({ children, ...props }: any) => (
-      <ol className="mb-4 ml-6 list-decimal text-gray-700 dark:text-gray-300" {...props}>
-        {children}
-      </ol>
-    ),
-    li: ({ children, ...props }: any) => (
-      <li className="mb-1" {...props}>
-        {children}
-      </li>
-    ),
-    
-    // 自定义表格样式
-    table: ({ children, ...props }: any) => (
-      <div className="overflow-x-auto mb-4">
-        <table className="min-w-full border border-gray-300 dark:border-gray-600" {...props}>
-          {children}
-        </table>
-      </div>
-    ),
-    thead: ({ children, ...props }: any) => (
-      <thead className="bg-gray-50 dark:bg-gray-800" {...props}>
-        {children}
-      </thead>
-    ),
-    th: ({ children, ...props }: any) => (
-      <th className="px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600" {...props}>
-        {children}
-      </th>
-    ),
-    td: ({ children, ...props }: any) => (
-      <td className="px-4 py-2 text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700" {...props}>
-        {children}
-      </td>
-    ),
-    
-    // 自定义引用样式
-    blockquote: ({ children, ...props }: any) => (
-      <blockquote className="border-l-4 border-blue-500 pl-4 my-4 italic text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 py-2" {...props}>
-        {children}
-      </blockquote>
-    ),
-    
-    // 自定义链接样式
-    a: ({ children, href, ...props }: any) => (
-      <a
-        href={href}
-        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
-        target="_blank"
-        rel="noopener noreferrer"
-        {...props}
-      >
-        {children}
-      </a>
-    ),
-    
-    // 自定义分割线样式
-    hr: ({ ...props }: any) => (
-      <hr className="my-8 border-gray-300 dark:border-gray-600" {...props} />
-    ),
-    
-    // 自定义图片样式
-    img: ({ src, alt, ...props }: any) => (
-      <img
-        src={src}
-        alt={alt}
-        className="max-w-full h-auto rounded-lg shadow-md my-4"
-        loading="lazy"
-        {...props}
-      />
-    )
-  }), [renderOptions]);
+    };
 
-  // 检测是否为纯 mermaid 内容
-  const isPureMermaid = useMemo(() => detectMermaid(content), [content]);
+    useEffect(() => {
+      reRender();
+    }, [container, code, isMermaid]);
 
-  // 如果是纯 mermaid 内容，直接渲染 MermaidChartV2
-  if (isPureMermaid && renderOptions.enableMermaid) {
+    const refElement = useCallback((node: HTMLDivElement) => {
+      if (node !== null) {
+        setContainer(node);
+      }
+    }, []);
+
+    if (isMermaid && renderOptions.enableMermaid) {
+      return (
+        <div ref={refElement} className="my-4">
+          <code id={demoid.current} style={{ display: 'none' }}>
+            {code}
+          </code>
+        </div>
+      );
+    }
+
     return (
-      <div className={`markdown-renderer ${className}`}>
-        <MermaidChartV2
-          content={content}
-          className="my-4"
-        />
-      </div>
+      <code className={className} {...props}>
+        {children}
+      </code>
     );
-  }
+  }, [renderOptions.enableMermaid]);
+
+  // 配置 @uiw/react-md-editor 的预览选项
+  const previewOptions = useMemo(() => {
+    return {
+      components: {
+        code: Code
+      },
+      rehypeRewrite: (node: any, index: number, parent: any) => {
+        // 处理mermaid代码块
+        if (node.tagName === 'code' && parent && parent.tagName === 'pre') {
+          const className = node.properties?.className;
+          if (className && className.includes('language-mermaid')) {
+            // 让自定义Code组件处理mermaid渲染
+          }
+        }
+      }
+    };
+  }, [Code]);
+
+  // 初始化mermaid，根据主题动态设置
+  useEffect(() => {
+    if (renderOptions.enableMermaid) {
+      const mermaidTheme = theme === 'dark' ? 'dark' : 'default';
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: mermaidTheme,
+        securityLevel: 'loose'
+      });
+    }
+  }, [renderOptions.enableMermaid, theme]);
 
   return (
-    <div className={`markdown-renderer prose prose-lg max-w-none dark:prose-invert ${className}`}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={renderOptions.enableSyntaxHighlight ? [rehypeHighlight] : []}
-        components={components}
-      >
-        {content}
-      </ReactMarkdown>
+    <div className={`markdown-renderer ${className}`} data-color-mode={theme}>
+      <MDEditor.Markdown 
+        source={content} 
+        style={{ 
+          whiteSpace: 'pre-wrap',
+          backgroundColor: 'transparent',
+          color: 'inherit'
+        }}
+        components={previewOptions.components}
+        rehypeRewrite={previewOptions.rehypeRewrite}
+      />
     </div>
   );
 };
