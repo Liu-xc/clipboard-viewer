@@ -278,7 +278,7 @@ const ClipboardHistory: React.FC = () => {
   });
 
   const handleCardClick = (item: ClipboardItem) => {
-    if (item.type === 'text' || item.type === 'mermaid') {
+    if (item.type === 'text' || item.type === 'mermaid' || item.type === 'file') {
       navigate(`/markdown/${item.id}`);
     }
   };
@@ -291,7 +291,7 @@ const ClipboardHistory: React.FC = () => {
         padding="md" 
         radius="md" 
         className="clipboard-item"
-        style={{ cursor: (item.type === 'text' || item.type === 'mermaid') ? 'pointer' : 'default' }}
+        style={{ cursor: (item.type === 'text' || item.type === 'mermaid' || item.type === 'file') ? 'pointer' : 'default' }}
         onClick={() => handleCardClick(item)}
       >
         <Group justify="space-between" mb="xs">
@@ -341,12 +341,12 @@ const ClipboardHistory: React.FC = () => {
                 >
                   复制
                 </Menu.Item>
-                {(isMarkdown(item) || item.type === 'mermaid') && (
+                {(isMarkdown(item) || item.type === 'mermaid' || item.type === 'file') && (
                   <Menu.Item
                     leftSection={<IconEye size={14} />}
                     onClick={() => handleViewMarkdown(item)}
                   >
-                    {item.type === 'mermaid' ? '查看图表' : '查看 Markdown'}
+                    {item.type === 'mermaid' ? '查看图表' : item.type === 'file' ? '查看 Markdown' : '查看 Markdown'}
                   </Menu.Item>
                 )}
                 <Menu.Item
@@ -400,9 +400,18 @@ const ClipboardHistory: React.FC = () => {
               />
             </div>
           ) : (
-            <Text size="sm" lineClamp={3}>
-              {item.preview}
-            </Text>
+            <div style={{ maxHeight: '120px', overflow: 'hidden' }}>
+              <MarkdownRenderer 
+                content={item.preview ?? ''} 
+                options={{ 
+                  enableSyntaxHighlight: false,
+                  enableMermaid: item.type === 'mermaid',
+                  enableMath: false,
+                  enableTableOfContents: false
+                }}
+                className="text-sm"
+              />
+            </div>
           )}
         </div>
         
