@@ -19,17 +19,30 @@ export class StorageService {
       // 确保数据目录存在
       await fs.mkdir(this.dataDir, { recursive: true });
       
+      // 检查文件权限
+      try {
+        await fs.access(this.dataDir, fs.constants.R_OK | fs.constants.W_OK);
+      } catch (permError) {
+        console.error('数据目录权限检查失败:', permError);
+      }
+      
       // 加载历史记录
       await this.loadHistory();
-      
-      console.log(`Storage initialized. Loaded ${this.clipboardHistory.length} items.`);
     } catch (error) {
-      console.error('Error initializing storage:', error);
+      console.error('StorageService 初始化失败:', error);
     }
   }
 
   private async loadHistory() {
     try {
+      // 检查文件是否存在
+      try {
+        await fs.access(this.historyFile, fs.constants.F_OK);
+      } catch {
+        this.clipboardHistory = [];
+        return;
+      }
+      
       const data = await fs.readFile(this.historyFile, 'utf-8');
       const parsed = JSON.parse(data);
       
@@ -44,10 +57,12 @@ export class StorageService {
           this.clipboardHistory = this.clipboardHistory.slice(0, this.maxItems);
           await this.saveHistory();
         }
+      } else {
+        this.clipboardHistory = [];
       }
     } catch (error) {
       if ((error as any).code !== 'ENOENT') {
-        console.error('Error loading history:', error);
+        console.error('加载历史记录时发生错误:', error);
       }
       // 文件不存在或格式错误，使用空数组
       this.clipboardHistory = [];
@@ -62,9 +77,24 @@ export class StorageService {
         version: '1.0.0'
       };
       
-      await fs.writeFile(this.historyFile, JSON.stringify(data, null, 2), 'utf-8');
+      const jsonString = JSON.stringify(data, null, 2);
+      await fs.writeFile(this.historyFile, jsonString, 'utf-8');
     } catch (error) {
-      console.error('Error saving history:', error);
+      console.error('保存历史记录时发生错误:', error);
+      
+      // 尝试重试保存
+      setTimeout(async () => {
+        try {
+          const retryData = {
+            items: this.clipboardHistory,
+            lastUpdated: Date.now(),
+            version: '1.0.0'
+          };
+          await fs.writeFile(this.historyFile, JSON.stringify(retryData, null, 2), 'utf-8');
+        } catch (retryError) {
+          console.error('重试保存失败:', retryError);
+        }
+      }, 1000);
     }
   }
 
@@ -91,7 +121,7 @@ export class StorageService {
       // 保存到文件
       await this.saveHistory();
     } catch (error) {
-      console.error('Error adding clipboard item:', error);
+      console.error('添加剪贴板项目时发生错误:', error);
     }
   }
 

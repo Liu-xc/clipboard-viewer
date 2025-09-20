@@ -43,6 +43,7 @@ class ClipboardViewerApp {
     
     // 初始化服务
     await this.configService.initialize();
+    await this.storageService.initialize(); // 添加StorageService初始化
     await this.clipboardService.initialize();
     
     // 创建窗口
