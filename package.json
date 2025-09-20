@@ -5,10 +5,13 @@
   "main": "dist/main/main/index.js",
   "scripts": {
     "dev": "npm run build && concurrently \"npm run dev:renderer\" \"npm run dev:floating\" \"wait-on http://localhost:3000 http://localhost:5174 && npm run dev:electron\"",
+    "dev:smart": "node scripts/dev-with-cache-check.js",
+    "dev:clean": "npm run clear-cache && npm run dev",
     "dev:renderer": "vite --config src/renderer/main/vite.config.ts",
     "dev:floating": "vite --config src/renderer/floating/vite.config.ts --port 5174",
     "dev:electron": "npm run build:preload && NODE_ENV=development electron .",
     "build": "npm run build:renderer && npm run build:floating && npm run build:main",
+    "build:clean": "npm run clear-cache && npm run build",
     "build:renderer": "vite build --config src/renderer/main/vite.config.ts",
     "build:floating": "vite build --config src/renderer/floating/vite.config.ts",
     "build:main": "tsc --project tsconfig.main.json && tsc --project tsconfig.preload.json",
@@ -19,7 +22,11 @@
     "lint": "eslint src --ext .ts,.tsx",
     "preview": "vite preview --config src/renderer/main/vite.config.ts",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "clear-cache": "node scripts/clear-cache.js",
+    "clear-cache:vite": "node scripts/clear-cache.js --vite-only",
+    "clear-cache:pm": "node scripts/clear-cache.js --pm-only",
+    "clear-cache:help": "node scripts/clear-cache.js --help"
   },
   "keywords": [
     "electron",

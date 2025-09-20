@@ -196,6 +196,68 @@ graph TD
   }
 };
 
+// Plain text content (non-markdown)
+export const PlainText: Story = {
+  args: {
+    content: `这是一段普通的文本内容，不包含任何 Markdown 语法。
+
+这里有一些特殊字符：# * _ ~ [ ] ( ) { }
+
+多行文本测试：
+第一行
+第二行
+第三行
+
+包含一些代码样式的文本但不是真正的代码块：
+function test() {
+  console.log("hello");
+}
+
+这应该被渲染为纯文本而不是 Markdown。`,
+  },
+};
+
+// Mixed content (some markdown, some plain text)
+export const MixedContent: Story = {
+  args: {
+    content: `# 这是一个标题
+
+这是正常的 Markdown 内容。
+
+但是下面这些不是 Markdown：
+这只是普通文本 # 不是标题
+* 这不是列表项
+** 这也不是粗体
+
+回到正常的 Markdown：
+
+## 子标题
+
+- 这是真正的列表项
+- **这是粗体文本**`,
+  },
+};
+
+// Code-like plain text
+export const CodeLikePlainText: Story = {
+  args: {
+    content: `function notRealCode() {
+  // 这看起来像代码但实际上是纯文本
+  const variable = "value";
+  return variable;
+}
+
+class NotRealClass {
+  constructor() {
+    this.property = "test";
+  }
+}
+
+// 这些都应该被当作纯文本处理
+// 而不是代码块`,
+  },
+};
+
 // 主题切换测试组件
 const ThemeToggleWrapper = ({ content, options }: { content: string; options?: any }) => {
   const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');

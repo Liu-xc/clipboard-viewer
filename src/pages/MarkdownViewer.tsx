@@ -91,15 +91,39 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
 
     try {
       const isMarkdown = detectMarkdown(clipboardItem.content);
-      if (!isMarkdown) {
-        setError('Content is not valid Markdown');
-        return;
+      if (isMarkdown) {
+        // 如果是 Markdown 内容，正常解析
+        const parsed = parseMarkdownContent(clipboardItem.content);
+        setMarkdownContent(parsed);
+      } else {
+        // 如果不是 Markdown 内容，创建一个基本的内容对象用于显示
+        const fallbackContent: MarkdownContent = {
+          id: `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          content: clipboardItem.content,
+          title: undefined,
+          wordCount: clipboardItem.content.length,
+          estimatedReadTime: Math.max(1, Math.ceil(clipboardItem.content.length / 1000)),
+          hasCodeBlocks: false,
+          hasMermaidDiagrams: false,
+          complexity: 'simple',
+          lastModified: Date.now()
+        };
+        setMarkdownContent(fallbackContent);
       }
-
-      const parsed = parseMarkdownContent(clipboardItem.content);
-      setMarkdownContent(parsed);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse Markdown content');
+      // 即使解析失败，也创建一个兜底的内容对象
+      const fallbackContent: MarkdownContent = {
+        id: `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        content: clipboardItem.content,
+        title: undefined,
+        wordCount: clipboardItem.content.length,
+        estimatedReadTime: Math.max(1, Math.ceil(clipboardItem.content.length / 1000)),
+        hasCodeBlocks: false,
+        hasMermaidDiagrams: false,
+        complexity: 'simple',
+        lastModified: Date.now()
+      };
+      setMarkdownContent(fallbackContent);
     }
   }, [clipboardItem]);
 
@@ -320,10 +344,31 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
                 {clipboardItem?.content || directContent}
               </Code>
             ) : (
-              <MarkdownRenderer
-                content={clipboardItem?.content || directContent || ''}
-                options={renderOptions}
-              />
+              (() => {
+                const content = clipboardItem?.content || directContent || '';
+                const isMarkdown = detectMarkdown(content);
+                
+                if (isMarkdown) {
+                  return (
+                    <MarkdownRenderer
+                      content={content}
+                      options={renderOptions}
+                    />
+                  );
+                } else {
+                  // 对于非 Markdown 内容，以预格式化文本显示
+                  return (
+                    <div>
+                      <Text size="sm" c="dimmed" mb="md">
+                        检测到纯文本内容，以预格式化文本显示：
+                      </Text>
+                      <Code block style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {content}
+                      </Code>
+                    </div>
+                  );
+                }
+              })()
             )}
           </Paper>
         </Grid.Col>
