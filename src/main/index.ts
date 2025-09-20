@@ -110,7 +110,17 @@ class ClipboardViewerApp {
 
     ipcMain.handle('clipboard:copyToClipboard', async (_, content) => {
       try {
+        // 设置剪贴板内容
         this.clipboardService.setClipboardContent(content);
+        
+        // 创建剪贴板项目并添加到历史记录
+        const clipboardItem = await this.clipboardService.createClipboardItem(content);
+        await this.storageService.addClipboardItem(clipboardItem);
+        
+        // 通知所有窗口更新历史记录
+        const history = await this.storageService.getClipboardHistory();
+        this.windowManager.sendToMainWindow('clipboard:update', history);
+        
         return { success: true, data: true };
       } catch (error) {
         return { success: false, error: (error as Error).message };

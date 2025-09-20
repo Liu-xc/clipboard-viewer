@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Group, ActionIcon, Tooltip, Button, Menu, Text, LoadingOverlay, Alert, Grid, Paper, Title, Stack, Anchor, Code, TypographyStylesProvider } from '@mantine/core';
-import { IconDownload, IconShare, IconClock, IconFileText, IconMenu2, IconEye, IconEyeOff } from '@tabler/icons-react';
+import { IconDownload, IconShare, IconClock, IconFileText, IconMenu2, IconEye, IconEyeOff, IconCopy } from '@tabler/icons-react';
 import { MarkdownRenderer } from '../renderer/main/src/components/MarkdownRenderer';
 import TableOfContents from '../renderer/main/src/components/TableOfContents';
 import PageHeader from '../renderer/main/src/components/PageHeader';
 import { ClipboardItem, MarkdownContent, MarkdownRenderOptions } from '../../shared/types';
 import { detectMarkdown, parseMarkdownContent, generateTableOfContents } from '../utils/markdownUtils';
+import { notifications } from '@mantine/notifications';
 
 interface MarkdownViewerProps {
   // 可选的直接传入内容，用于预览模式
@@ -193,6 +194,56 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
     }
   };
 
+  // 复制内容到剪贴板
+  const handleCopyContent = async () => {
+    if (!clipboardItem) return;
+
+    try {
+      if (window.electronAPI) {
+        const response = await window.electronAPI.copyToClipboard(clipboardItem.content);
+        if (response.success) {
+          notifications.show({
+            title: '复制成功',
+            message: '内容已复制到剪贴板',
+            color: 'green',
+            autoClose: 2000
+          });
+          
+          // 如果当前在历史页面，触发页面刷新以更新排序
+          // 通过检查当前路径来判断是否需要刷新历史页面
+          if (window.location.pathname.includes('/markdown/') && window.history.length > 1) {
+            // 发送自定义事件通知历史页面更新
+            window.dispatchEvent(new CustomEvent('clipboardUpdated'));
+          }
+        } else {
+          throw new Error(response.error);
+        }
+      } else {
+        // 在 web 环境中使用浏览器 API
+        await navigator.clipboard.writeText(clipboardItem.content);
+        notifications.show({
+          title: '复制成功',
+          message: '内容已复制到剪贴板',
+          color: 'green',
+          autoClose: 2000
+        });
+        
+        // 同样在web环境中也发送事件
+        if (window.location.pathname.includes('/markdown/') && window.history.length > 1) {
+          window.dispatchEvent(new CustomEvent('clipboardUpdated'));
+        }
+      }
+    } catch (error) {
+      console.error('复制失败:', error);
+      notifications.show({
+        title: '复制失败',
+        message: error instanceof Error ? error.message : '复制内容时发生错误',
+        color: 'red',
+        autoClose: 3000
+      });
+    }
+  };
+
   // 格式化时间
   const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
@@ -262,6 +313,15 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
                 onClick={() => setShowRawContent(!showRawContent)}
               >
                 {showRawContent ? <IconEye size={16} /> : <IconEyeOff size={16} />}
+              </ActionIcon>
+            </Tooltip>
+            
+            <Tooltip label="复制内容">
+              <ActionIcon
+                variant="subtle"
+                onClick={handleCopyContent}
+              >
+                <IconCopy size={16} />
               </ActionIcon>
             </Tooltip>
             

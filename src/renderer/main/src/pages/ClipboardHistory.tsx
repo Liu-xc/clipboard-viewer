@@ -65,7 +65,19 @@ const ClipboardHistory: React.FC = () => {
     // 监听剪贴板历史更新
     const handleClipboardUpdate = (updatedItems: ClipboardItem[]) => {
       console.log('渲染进程接收到剪贴板历史更新事件:', updatedItems.length, '个项目');
-      setClipboardItems(updatedItems);
+      console.log('更新前的项目数量:', clipboardItems.length);
+      console.log('最新项目的时间戳:', updatedItems[0]?.timestamp);
+      
+      // 确保按时间戳降序排列
+      const sortedItems = [...updatedItems].sort((a, b) => b.timestamp - a.timestamp);
+      console.log('排序后设置状态，最新项目ID:', sortedItems[0]?.id);
+      
+      setClipboardItems(sortedItems);
+    };
+    
+    // 监听来自MarkdownViewer的剪贴板更新事件
+    const handleClipboardUpdated = () => {
+      loadClipboardHistory();
     };
     
     console.log('ClipboardHistory组件: 检查window.electronAPI是否存在:', !!window.electronAPI);
@@ -78,11 +90,14 @@ const ClipboardHistory: React.FC = () => {
       console.error('ClipboardHistory组件: window.electronAPI不存在!');
     }
     
+    window.addEventListener('clipboardUpdated', handleClipboardUpdated);
+    
     return () => {
       console.log('ClipboardHistory组件: 清理事件监听器');
       if (window.electronAPI) {
         window.electronAPI.removeClipboardChangeListener();
       }
+      window.removeEventListener('clipboardUpdated', handleClipboardUpdated);
     };
   }, []);
 
@@ -142,14 +157,17 @@ const ClipboardHistory: React.FC = () => {
   const handleCopyToClipboard = async (item: ClipboardItem) => {
     try {
       if (window.electronAPI) {
+        console.log('开始复制到剪贴板:', item.id);
         const response = await window.electronAPI.copyToClipboard(item.content);
         if (response.success) {
+          console.log('复制成功，等待事件更新历史记录');
           notifications.show({
             title: '复制成功',
             message: '内容已复制到剪贴板',
             color: 'green',
             autoClose: 2000
           });
+          // 移除手动调用loadClipboardHistory，依赖主进程事件更新
         } else {
           throw new Error(response.error);
         }
@@ -267,15 +285,17 @@ const ClipboardHistory: React.FC = () => {
     }
   };
 
-  const filteredItems = clipboardItems.filter(item => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      item.content.toLowerCase().includes(query) ||
-      item.preview.toLowerCase().includes(query) ||
-      item.tags.some(tag => tag.toLowerCase().includes(query))
-    );
-  });
+  const filteredItems = clipboardItems
+    .filter(item => {
+      if (!searchQuery) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        item.content.toLowerCase().includes(query) ||
+        item.preview.toLowerCase().includes(query) ||
+        item.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    })
+    .sort((a, b) => b.timestamp - a.timestamp); // 按时间戳降序排列，最新的在前
 
   const handleCardClick = (item: ClipboardItem) => {
     if (item.type === 'text' || item.type === 'mermaid' || item.type === 'file') {
@@ -337,26 +357,36 @@ const ClipboardHistory: React.FC = () => {
               <Menu.Dropdown>
                 <Menu.Item
                   leftSection={<IconCopy size={14} />}
-                  onClick={() => handleCopyToClipboard(item)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyToClipboard(item);
+                  }}
                 >
                   复制
                 </Menu.Item>
                 {(isMarkdown(item) || item.type === 'mermaid' || item.type === 'file') && (
                   <Menu.Item
                     leftSection={<IconEye size={14} />}
-                    onClick={() => handleViewMarkdown(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewMarkdown(item);
+                    }}
                   >
                     {item.type === 'mermaid' ? '查看图表' : item.type === 'file' ? '查看 Markdown' : '查看 Markdown'}
                   </Menu.Item>
                 )}
                 <Menu.Item
                   leftSection={item.favorite ? <IconHeartFilled size={14} /> : <IconHeart size={14} />}
-                  onClick={() => handleToggleFavorite(item)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleFavorite(item);
+                  }}
                 >
                   {item.favorite ? '取消收藏' : '添加收藏'}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<IconTag size={14} />}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   添加标签
                 </Menu.Item>
@@ -364,7 +394,10 @@ const ClipboardHistory: React.FC = () => {
                 <Menu.Item
                   leftSection={<IconTrash size={14} />}
                   color="red"
-                  onClick={() => handleDeleteItem(item)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteItem(item);
+                  }}
                 >
                   删除
                 </Menu.Item>

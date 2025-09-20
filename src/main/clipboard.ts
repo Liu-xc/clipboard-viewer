@@ -75,7 +75,7 @@ export class ClipboardService extends EventEmitter {
     }
   }
 
-  private async createClipboardItem(content: string): Promise<ClipboardItem> {
+  async createClipboardItem(content: string): Promise<ClipboardItem> {
     const id = this.generateId(content);
     const timestamp = Date.now();
     const type = this.detectContentType(content);

@@ -106,12 +106,22 @@ export class StorageService {
       );
       
       if (existingIndex !== -1) {
-        // 如果存在，移除旧的并添加新的到顶部
+        // 如果存在，更新现有项目的时间戳并移动到顶部
+        const existingItem = this.clipboardHistory[existingIndex];
+        // 保留原有的收藏状态、标签等信息，只更新时间戳
+        const updatedItem = {
+          ...existingItem,
+          timestamp: item.timestamp // 更新为最新的时间戳
+        };
+        
+        // 移除旧位置的项目
         this.clipboardHistory.splice(existingIndex, 1);
+        // 将更新后的项目添加到顶部
+        this.clipboardHistory.unshift(updatedItem);
+      } else {
+        // 如果不存在，添加新项目到顶部
+        this.clipboardHistory.unshift(item);
       }
-      
-      // 添加到顶部
-      this.clipboardHistory.unshift(item);
       
       // 限制数量
       if (this.clipboardHistory.length > this.maxItems) {
