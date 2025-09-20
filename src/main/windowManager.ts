@@ -15,10 +15,13 @@ export class WindowManager {
   }
 
   async createMainWindow(): Promise<BrowserWindow> {
-    // 恢复窗口状态
+    // 获取配置中保存的窗口尺寸
+    const config = await this.configService.getConfig();
+    
+    // 恢复窗口状态，优先使用配置中的尺寸
     const mainWindowState = windowStateKeeper({
-      defaultWidth: 1000,
-      defaultHeight: 700
+      defaultWidth: config.mainWindow.width || 1000,
+      defaultHeight: config.mainWindow.height || 700
     });
 
     this.mainWindow = new BrowserWindow({
@@ -28,6 +31,7 @@ export class WindowManager {
       height: mainWindowState.height,
       minWidth: 800,
       minHeight: 600,
+      resizable: true, // 确保窗口可以调整大小
       show: false,
       titleBarStyle: 'hiddenInset',
       webPreferences: {
@@ -51,6 +55,30 @@ export class WindowManager {
 
     // 管理窗口状态
     mainWindowState.manage(this.mainWindow);
+
+    // 设置防抖保存窗口大小的定时器
+    let resizeTimeout: NodeJS.Timeout;
+    
+    // 监听窗口大小变化事件
+    this.mainWindow.on('resize', () => {
+      // 清除之前的定时器
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+      }
+      
+      // 设置防抖，500ms 后保存窗口大小
+      resizeTimeout = setTimeout(async () => {
+        if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+          const [width, height] = this.mainWindow.getSize();
+          try {
+            await this.configService.updateMainWindowConfig({ width, height });
+            console.log(`窗口大小已保存: ${width}x${height}`);
+          } catch (error) {
+            console.error('保存窗口大小失败:', error);
+          }
+        }
+      }, 500);
+    });
 
     // 加载主窗口内容
     if (isDev) {
