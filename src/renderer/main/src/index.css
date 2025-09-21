@@ -380,6 +380,22 @@ html, body {
   outline-offset: 2px;
 }
 
+/* Masonry 瀑布流样式 */
+.masonry-grid {
+  display: flex;
+  margin-left: -16px; /* 抵消列的左边距 */
+  width: auto;
+}
+
+.masonry-grid-column {
+  padding-left: 16px; /* 列间距 */
+  background-clip: padding-box;
+}
+
+.masonry-grid-column > div {
+  margin-bottom: 16px; /* 卡片间距 */
+}
+
 /* 打印样式 */
 @media print {
   .no-print {

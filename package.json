@@ -7,12 +7,10 @@
     "dev": "pnpm run dev:renderer & wait-on http://localhost:3000 && pnpm run dev:electron:managed",
     "dev:frontend": "node scripts/dev-frontend-managed.js",
     "dev:renderer": "vite --config src/renderer/main/vite.config.mjs",
-
     "dev:electron": "NODE_ENV=development electron .",
     "dev:electron:managed": "node scripts/dev-electron-managed.js",
     "build": "pnpm run build:renderer && pnpm run build:main && pnpm run build:preload",
     "build:renderer": "vite build --config src/renderer/main/vite.config.mjs",
-
     "build:main": "tsc --project tsconfig.main.json",
     "build:preload": "tsc --project tsconfig.preload.json",
     "pack": "pnpm run build && electron-builder --dir",
@@ -81,6 +79,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^10.1.0",
+    "react-masonry-css": "^1.0.16",
     "react-router-dom": "^6.20.1",
     "rehype-highlight": "^7.0.2",
     "rehype-rewrite": "^4.0.2",
