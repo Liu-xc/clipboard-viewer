@@ -5,13 +5,7 @@ import type { ElectronAPI } from '../renderer/main/src/types';
 const electronAPI: ElectronAPI = {
   // 剪贴板相关
   getClipboardHistory: () => ipcRenderer.invoke('clipboard:getHistory'),
-  copyToClipboard: (content) => ipcRenderer.invoke('clipboard:copyToClipboard', content),
-  removeClipboardItem: (id) => ipcRenderer.invoke('clipboard:removeItem', id),
-  toggleFavorite: (id) => ipcRenderer.invoke('clipboard:toggleFavorite', id),
-  clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clearHistory'),
-  onClipboardUpdate: (callback) => {
-    ipcRenderer.on('clipboard:update', (_, items) => callback(items));
-  },
+
   onClipboardChanged: (callback) => {
     console.log('Preload: 注册clipboard:changed事件监听器');
     ipcRenderer.on('clipboard:changed', (_, item) => {
@@ -33,17 +27,11 @@ const electronAPI: ElectronAPI = {
   // 窗口控制
   showMainWindow: () => ipcRenderer.invoke('mainWindow:show'),
   hideMainWindow: () => ipcRenderer.invoke('mainWindow:hide'),
-  toggleFloatingBall: () => ipcRenderer.invoke('floatingBall:toggle'),
-  updateFloatingBallPosition: (x: number, y: number) => ipcRenderer.invoke('floatingBall:updatePosition', x, y),
+
   
   // 配置管理
   getConfig: () => ipcRenderer.invoke('app:getConfig'),
-  updateConfig: (config) => ipcRenderer.invoke('app:updateConfig', config),
-  onConfigUpdate: (callback) => {
-    ipcRenderer.on('config:update', (_, config) => callback(config));
-  },
-  exportConfig: () => ipcRenderer.invoke('config:export'),
-  importConfig: (configData) => ipcRenderer.invoke('config:import', configData),
+  setConfig: (config) => ipcRenderer.invoke('app:updateConfig', config),
   
   // 应用控制
   quitApp: () => ipcRenderer.invoke('app:quit'),

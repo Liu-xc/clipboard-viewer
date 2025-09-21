@@ -25,16 +25,7 @@ const DEFAULT_CONFIG: AppConfig = {
     toggleFloatingBall: 'CommandOrControl+Shift+B',
     clearHistory: 'CommandOrControl+Shift+C'
   },
-  floatingBall: {
-    enabled: true,
-    position: { x: 100, y: 100 },
-    opacity: 0.8,
-    size: 60,
-    alwaysOnTop: true,
-    clickThrough: false,
-    autoHide: false,
-    hideDelay: 3000
-  },
+
   mainWindow: {
     width: 1200,
     height: 800,
@@ -221,9 +212,7 @@ export class ConfigService {
     return this.config.hotkeys;
   }
 
-  getFloatingBallConfig(): AppConfig['floatingBall'] {
-    return { ...this.config.floatingBall };
-  }
+
 
   getMainWindowConfig(): AppConfig['mainWindow'] {
     return { ...this.config.mainWindow };
@@ -254,11 +243,7 @@ export class ConfigService {
     await this.updateConfig({ hotkeys: hotkey });
   }
 
-  async updateFloatingBallConfig(updates: Partial<AppConfig['floatingBall']>): Promise<void> {
-    await this.updateConfig({
-      floatingBall: { ...this.config.floatingBall, ...updates }
-    });
-  }
+
 
   async updateMainWindowConfig(updates: Partial<AppConfig['mainWindow']>): Promise<void> {
     await this.updateConfig({

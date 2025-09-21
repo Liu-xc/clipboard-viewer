@@ -38,10 +38,8 @@ function clearViteCache() {
   const projectRoot = path.resolve(__dirname, '..');
   const cacheDirectories = [
     path.join(projectRoot, 'node_modules', '.vite'),
-    path.join(projectRoot, 'node_modules', '.vite', 'main'),
-    path.join(projectRoot, 'node_modules', '.vite', 'floating'),
-    path.join(projectRoot, 'node_modules', '.vite', 'main', 'deps'),
-    path.join(projectRoot, 'node_modules', '.vite', 'floating', 'deps'),
+    path.join(projectRoot, 'node_modules', '.vite', 'renderer'),
+    path.join(projectRoot, 'node_modules', '.vite', 'renderer', 'deps'),
     path.join(projectRoot, 'dist')
   ];
   

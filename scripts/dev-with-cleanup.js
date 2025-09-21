@@ -180,7 +180,7 @@ class ProcessManager {
     await Promise.all(terminationPromises);
     
     // 清理端口
-    await this.clearPorts([5173, 5174, 3000, 8080, 8081]);
+    await this.clearPorts([5173, 3000, 8080, 8081]);
     
     // 额外的进程清理
     await this.cleanupProcesses();
@@ -199,7 +199,7 @@ class ProcessManager {
       "pkill -f 'dev:floating'",
       // 清理 Node 进程
       "pkill -f 'node.*5173'",
-      "pkill -f 'node.*5174'"
+      
     ];
     
     for (const cmd of cleanupCommands) {

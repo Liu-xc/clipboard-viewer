@@ -83,7 +83,7 @@ pnpm run dev
 
 # 或分别启动
 pnpm run dev:main      # 主窗口开发服务器
-pnpm run dev:floating  # 悬浮球开发服务器
+
 pnpm run dev:electron  # Electron 开发模式
 ```
 

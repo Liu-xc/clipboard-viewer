@@ -51,7 +51,6 @@ class ClipboardViewerApp {
     
     // 创建窗口
     await this.windowManager.createMainWindow();
-    await this.windowManager.createFloatingBall();
     
     // 开始监听剪贴板
     this.clipboardService.startMonitoring();
@@ -198,22 +197,7 @@ class ClipboardViewerApp {
       }
     });
 
-    ipcMain.handle('floatingBall:toggle', () => {
-      try {
-        this.windowManager.toggleFloatingBall();
-        return { success: true };
-      } catch (error) {
-        return { success: false, error: (error as Error).message };
-      }
-    });
 
-    ipcMain.handle('floatingBall:updatePosition', (_, position) => {
-      if (position && typeof position === 'object' && 'x' in position && 'y' in position) {
-        this.windowManager.updateFloatingBallPosition(position.x, position.y);
-      } else {
-        console.error('Invalid position parameter:', position);
-      }
-    });
 
     // 配置管理
     ipcMain.handle('app:getConfig', async () => {
@@ -282,10 +266,7 @@ class ClipboardViewerApp {
         label: '显示主窗口',
         click: () => this.windowManager.showMainWindow()
       },
-      {
-        label: '切换悬浮球',
-        click: () => this.windowManager.toggleFloatingBall()
-      },
+
       { type: 'separator' },
       {
         label: '退出',
@@ -328,7 +309,7 @@ class ClipboardViewerApp {
       const execAsync = util.promisify(exec);
       
       // 扩展端口检查范围，包括常见的开发服务器端口
-      const ports = [3000, 5173, 5174, 8080, 8081];
+      const ports = [3000, 5173, 8080, 8081];
       
       // 1. 首先终止占用端口的进程
       for (const port of ports) {

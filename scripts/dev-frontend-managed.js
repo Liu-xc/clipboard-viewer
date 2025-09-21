@@ -131,10 +131,7 @@ class FrontendManager {
     }
 
     // 清理端口
-    await this.killPort(3000);
-    await this.killPort(3002);
-    await this.killPort(5174);
-    await this.killPort(5175);
+      await this.killPort(3000);
 
     this.log('前端开发服务器已停止');
   }
@@ -152,25 +149,15 @@ class FrontendManager {
       // 强制清理可能占用的端口
       this.log('清理端口占用...');
       await this.killPort(3000);
-      await this.killPort(3002);
-      await this.killPort(5174);
-      await this.killPort(5175);
       
       // 等待端口完全释放
       await this.waitForPortFree(3000);
-      await this.waitForPortFree(3002);
-      await this.waitForPortFree(5174);
-      await this.waitForPortFree(5175);
       
       // 启动前端服务器
       this.log('启动前端服务器...');
       await this.startProcess('dev:renderer', 'Renderer Server');
       
-      // 等待一段时间再启动第二个服务器
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      await this.startProcess('dev:floating', 'Floating Server');
-      
-      this.log('所有前端服务器启动完成！');
+      this.log('前端服务器启动完成！');
       this.log('按 Ctrl+C 停止所有服务器');
       
       // 保持进程运行

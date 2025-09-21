@@ -283,75 +283,7 @@ const Settings: React.FC = () => {
           </Stack>
         </Card>
 
-        {/* 悬浮球设置 */}
-        <Card shadow="sm" padding="lg" radius="md">
-          <Group mb="md">
-            <IconCircle size={20} />
-            <Text fw={500}>悬浮球设置</Text>
-          </Group>
-          
-          <Stack gap="md">
-            <Group justify="space-between">
-              <div>
-                <Text size="sm" fw={500}>启用悬浮球</Text>
-                <Text size="xs" c="dimmed">显示桌面悬浮球</Text>
-              </div>
-              <Switch
-                checked={config.floatingBall.enabled}
-                onChange={(event) => saveConfig({
-                  floatingBall: { ...config.floatingBall, enabled: event.currentTarget.checked }
-                })}
-              />
-            </Group>
-            
-            {config.floatingBall.enabled && (
-              <>
-                <div>
-                  <Group justify="space-between" mb="xs">
-                    <Text size="sm" fw={500}>透明度</Text>
-                    <Text size="sm" c="dimmed">{Math.round(config.floatingBall.opacity * 100)}%</Text>
-                  </Group>
-                  <Slider
-                    value={config.floatingBall.opacity}
-                    onChange={(value) => saveConfig({
-                      floatingBall: { ...config.floatingBall, opacity: value }
-                    })}
-                    min={0.1}
-                    max={1}
-                    step={0.1}
-                    marks={[
-                      { value: 0.1, label: '10%' },
-                      { value: 0.5, label: '50%' },
-                      { value: 1, label: '100%' }
-                    ]}
-                  />
-                </div>
-                
-                <div>
-                  <Group justify="space-between" mb="xs">
-                    <Text size="sm" fw={500}>大小</Text>
-                    <Text size="sm" c="dimmed">{config.floatingBall.size}px</Text>
-                  </Group>
-                  <Slider
-                    value={config.floatingBall.size}
-                    onChange={(value) => saveConfig({
-                      floatingBall: { ...config.floatingBall, size: value }
-                    })}
-                    min={40}
-                    max={100}
-                    step={5}
-                    marks={[
-                      { value: 40, label: '40px' },
-                      { value: 60, label: '60px' },
-                      { value: 80, label: '80px' },
-                      { value: 100, label: '100px' }
-                    ]}
-                  />
-                </div>
-              </>
-            )}
-          </Stack>
-        </Card>
+
 
         {/* 主窗口设置 */}
         <Card shadow="sm" padding="lg" radius="md">

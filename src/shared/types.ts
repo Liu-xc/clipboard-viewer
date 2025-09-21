@@ -29,19 +29,9 @@ export interface AppConfig {
   enableSounds: boolean;
   hotkeys: {
     toggleMainWindow: string;
-    toggleFloatingBall: string;
     clearHistory: string;
   };
-  floatingBall: {
-    enabled: boolean;
-    position: { x: number; y: number };
-    size: number;
-    opacity: number;
-    alwaysOnTop: boolean;
-    clickThrough: boolean;
-    autoHide: boolean;
-    hideDelay: number;
-  };
+
   mainWindow: {
     width: number;
     height: number;

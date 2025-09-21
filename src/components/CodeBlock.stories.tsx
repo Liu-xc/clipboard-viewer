@@ -181,7 +181,7 @@ export const JSON: Story = {
   "description": "A cross-platform desktop clipboard manager",
   "main": "dist/main/main/index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:renderer\" \"npm run dev:floating\" \"wait-on http://localhost:3000 http://localhost:5174 && npm run dev:electron\"",
+    "dev": "concurrently \"npm run dev:renderer\" \"wait-on http://localhost:3000 && npm run dev:electron\"",
     "build": "npm run build:renderer && npm run build:floating && npm run build:main",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

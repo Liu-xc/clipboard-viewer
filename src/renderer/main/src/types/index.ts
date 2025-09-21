@@ -18,12 +18,7 @@ export interface AppConfig {
   theme: 'light' | 'dark' | 'auto';
   autoCleanup: boolean;
   cleanupDays: number;
-  floatingBall: {
-    enabled: boolean;
-    position: { x: number; y: number };
-    size: number;
-    opacity: number;
-  };
+
 }
 
 // IPC 通信类型
@@ -43,8 +38,7 @@ export interface ElectronAPI {
   // 窗口控制
   showMainWindow: () => Promise<void>;
   hideMainWindow: () => Promise<void>;
-  toggleFloatingBall: () => Promise<void>;
-  updateFloatingBallPosition: (x: number, y: number) => Promise<void>;
+
   
   // 配置管理
   getConfig: () => Promise<IPCResponse<AppConfig>>;

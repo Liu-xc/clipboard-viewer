@@ -43,10 +43,10 @@ class ElectronManager {
 
   async waitForFrontend () {
     console.log('⏳ 等待前端服务器就绪...');
-    console.log('🔍 检查服务: http://localhost:3000 和 http://localhost:5174');
+    console.log('🔍 检查服务: http://localhost:3000');
 
     return new Promise((resolve, reject) => {
-      const waitOn = spawn('npx', ['wait-on', 'http://localhost:3000', 'http://localhost:5174'], {
+      const waitOn = spawn('npx', ['wait-on', 'http://localhost:3000'], {
         stdio: 'pipe'
       });
 
@@ -188,7 +188,7 @@ class ElectronManager {
   async start () {
     try {
       console.log('🎯 Electron 客户端管理器启动');
-      console.log('📝 注意：请确保前端服务器已启动 (pnpm run dev:renderer && pnpm run dev:floating)');
+      console.log('📝 注意：请确保前端服务器已启动 (pnpm run dev:renderer)');
 
       // 等待前端服务器就绪
       await this.waitForFrontend();

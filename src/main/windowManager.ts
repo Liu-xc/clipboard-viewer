@@ -7,7 +7,7 @@ const isDev = process.env.NODE_ENV === 'development';
 
 export class WindowManager {
   private mainWindow: BrowserWindow | null = null;
-  private floatingBallWindow: BrowserWindow | null = null;
+
   private configService: ConfigService;
   private isAppQuitting: boolean = false;
 
@@ -118,95 +118,7 @@ export class WindowManager {
     return this.mainWindow;
   }
 
-  async createFloatingBall(): Promise<BrowserWindow> {
-    const config = await this.configService.getConfig();
-    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
-    // 默认位置在右下角
-    const defaultX = width - config.floatingBall.size - 20;
-    const defaultY = height - config.floatingBall.size - 20;
-
-    // 窗口大小比悬浮球稍大，留出拖动区域
-    const windowSize = config.floatingBall.size + 20; // 增加20px的拖动区域
-    
-    this.floatingBallWindow = new BrowserWindow({
-      width: windowSize,
-      height: windowSize,
-      x: config.floatingBall.position.x || defaultX,
-      y: config.floatingBall.position.y || defaultY,
-      frame: false,
-      transparent: true,
-      alwaysOnTop: true,
-      skipTaskbar: true,
-      resizable: false,
-      movable: true,
-      minimizable: false,
-      maximizable: false,
-      closable: true,
-      focusable: true,
-      show: config.floatingBall.enabled,
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: path.join(__dirname, '../../preload/preload/index.js'),
-        webSecurity: !isDev,
-        // 开发模式下禁用所有缓存
-        ...(isDev && {
-          additionalArguments: [
-            '--disable-http-cache',
-            '--disable-web-security',
-            '--disable-features=VizDisplayCompositor',
-            '--no-sandbox',
-            '--disable-dev-shm-usage'
-          ]
-        })
-      }
-    });
-
-    // 为 macOS 设置更高的窗口层级，确保在全屏应用上显示
-    if (process.platform === 'darwin') {
-      this.floatingBallWindow.setAlwaysOnTop(true, 'screen-saver');
-    }
-
-    // 设置窗口透明度
-    this.floatingBallWindow.setOpacity(config.floatingBall.opacity);
-
-    // 加载悬浮球内容
-    if (isDev) {
-      await this.floatingBallWindow.loadURL('http://localhost:5174');
-    } else {
-      console.log('加载悬浮球内容:', path.join(__dirname, '../../renderer/floating/index.html'));
-      await this.floatingBallWindow.loadFile(path.join(__dirname, '../../renderer/floating/index.html'));
-    }
-
-    // 移除主进程的点击事件监听，让渲染进程处理所有鼠标事件
-
-    // 保存位置变化
-    this.floatingBallWindow.on('moved', async () => {
-      if (this.floatingBallWindow) {
-        const [x, y] = this.floatingBallWindow.getPosition();
-        // Update floating ball position in config
-        const config = await this.configService.getConfig();
-        await this.configService.updateFloatingBallConfig({ position: { x, y } });
-      }
-    });
-
-    // 悬浮球窗口关闭时的处理逻辑
-    this.floatingBallWindow.on('close', (event) => {
-      if (!this.floatingBallWindow?.isDestroyed()) {
-        // 如果不是应用退出状态，阻止关闭并隐藏窗口
-        if (!this.isAppQuitting && !(app as any).isQuitting) {
-          event.preventDefault();
-          this.floatingBallWindow?.hide();
-          return;
-        }
-        // 在退出时允许正常关闭，清理窗口引用
-        this.floatingBallWindow = null;
-      }
-    });
-
-    return this.floatingBallWindow;
-  }
 
   showMainWindow() {
     // 如果应用正在退出，不要尝试显示窗口
@@ -253,25 +165,7 @@ export class WindowManager {
     }
   }
 
-  toggleFloatingBall() {
-    // 如果应用正在退出，不要操作悬浮球
-    if (this.isAppQuitting) {
-      return;
-    }
 
-    if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
-      try {
-        if (this.floatingBallWindow.isVisible()) {
-          this.floatingBallWindow.hide();
-        } else {
-          this.floatingBallWindow.show();
-        }
-      } catch (error) {
-        console.error('Error toggling floating ball:', error);
-        this.floatingBallWindow = null;
-      }
-    }
-  }
 
   sendToMainWindow(channel: string, ...args: any[]) {
     // 如果应用正在退出，不要发送消息到窗口
@@ -297,51 +191,11 @@ export class WindowManager {
     return this.mainWindow;
   }
 
-  getFloatingBallWindow(): BrowserWindow | null {
-    return this.floatingBallWindow;
-  }
 
-  // 更新悬浮球位置
-  updateFloatingBallPosition(x: number, y: number) {
-    if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
-      try {
-        // 验证参数并取整
-        const validX = typeof x === 'number' && !isNaN(x) ? Math.round(x) : 0;
-        const validY = typeof y === 'number' && !isNaN(y) ? Math.round(y) : 0;
-        
-        console.log(`Setting floating ball position: x=${validX}, y=${validY}`);
-        this.floatingBallWindow.setPosition(validX, validY);
-      } catch (error) {
-        console.error('Error updating floating ball position:', error);
-        this.floatingBallWindow = null;
-      }
-    }
-  }
 
-  // 窗口吸边辅助方法
-  snapFloatingBallToEdge(currentPosition: { x: number; y: number }, ballSize: number): { x: number; y: number } {
-    const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
-    const snapThreshold = 50; // 吸边阈值
 
-    let newX = currentPosition.x;
-    let newY = currentPosition.y;
 
-    // 左右边缘吸附
-    if (currentPosition.x < snapThreshold) {
-      newX = 0;
-    } else if (currentPosition.x > screenWidth - ballSize - snapThreshold) {
-      newX = screenWidth - ballSize;
-    }
 
-    // 上下边缘吸附
-    if (currentPosition.y < snapThreshold) {
-      newY = 0;
-    } else if (currentPosition.y > screenHeight - ballSize - snapThreshold) {
-      newY = screenHeight - ballSize;
-    }
-
-    return { x: newX, y: newY };
-  }
 
   destroyAllWindows() {
     try {
@@ -354,15 +208,7 @@ export class WindowManager {
       this.mainWindow = null;
     }
     
-    try {
-      if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
-        this.floatingBallWindow.destroy();
-      }
-    } catch (error) {
-      console.error('Error destroying floating ball window:', error);
-    } finally {
-      this.floatingBallWindow = null;
-    }
+
   }
 
   setAppQuitting(quitting: boolean) {
