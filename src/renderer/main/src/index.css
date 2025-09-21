@@ -19,6 +19,37 @@ html, body {
   -webkit-app-region: drag;
   cursor: grab;
   position: relative;
+  /* 为macOS窗口控制按钮预留空间 */
+  padding-left: 68px;
+  padding-right: 20px;
+  /* 优化视觉平衡 */
+  display: flex;
+  align-items: center;
+  /* 现代化渐变背景 */
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 249, 250, 0.98) 50%,
+    rgba(241, 243, 245, 0.95) 100%);
+  border-bottom: 1px solid rgba(233, 236, 239, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-AppShell-header {
+  background: linear-gradient(135deg, 
+    rgba(26, 27, 30, 0.95) 0%,
+    rgba(37, 38, 43, 0.98) 50%,
+    rgba(42, 43, 48, 0.95) 100%);
+  border-bottom: 1px solid rgba(55, 58, 64, 0.8);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .mantine-AppShell-header:active {
@@ -44,7 +75,7 @@ html, body {
   border-radius: 2px;
   opacity: 0.3;
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
 }
 
 [data-mantine-color-scheme="dark"] .mantine-AppShell-header::before {
@@ -66,6 +97,65 @@ html, body {
 .mantine-AppShell-header .mantine-ActionIcon-root,
 .mantine-AppShell-header .mantine-Burger-root {
   -webkit-app-region: no-drag;
+}
+
+/* 标题样式优化 */
+[data-mantine-color-scheme="dark"] .mantine-AppShell-header .mantine-Text-root {
+  background: linear-gradient(135deg, var(--mantine-color-gray-1) 0%, var(--mantine-color-gray-3) 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* 统一按钮样式 */
+.mantine-AppShell-header .mantine-ActionIcon-root,
+.mantine-AppShell-header .mantine-Burger-root {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 6px !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  color: var(--mantine-color-gray-7) !important;
+}
+
+.mantine-AppShell-header .mantine-ActionIcon-root:hover,
+.mantine-AppShell-header .mantine-Burger-root:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  color: var(--mantine-color-gray-8) !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-AppShell-header .mantine-ActionIcon-root,
+[data-mantine-color-scheme="dark"] .mantine-AppShell-header .mantine-Burger-root {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--mantine-color-gray-3) !important;
+}
+
+[data-mantine-color-scheme="dark"] .mantine-AppShell-header .mantine-ActionIcon-root:hover,
+[data-mantine-color-scheme="dark"] .mantine-AppShell-header .mantine-Burger-root:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  color: var(--mantine-color-gray-1) !important;
+}
+
+/* 确保Burger按钮线条颜色统一 */
+.mantine-AppShell-header .mantine-Burger-root .mantine-Burger-burger {
+  background-color: currentColor !important;
+}
+
+.mantine-AppShell-header .mantine-Burger-root .mantine-Burger-burger::before,
+.mantine-AppShell-header .mantine-Burger-root .mantine-Burger-burger::after {
+  background-color: currentColor !important;
 }
 
 #root {

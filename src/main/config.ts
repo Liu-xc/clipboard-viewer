@@ -67,11 +67,11 @@ export class ConfigService {
     try {
       // 确保配置目录存在
       await fs.mkdir(this.configDir, { recursive: true });
-      
+
       // 加载配置
       await this.loadConfig();
-      
-      console.log('Config initialized:', this.config);
+
+      // console.log('Config initialized:', this.config);
     } catch (error) {
       console.error('Error initializing config:', error);
     }
@@ -81,10 +81,10 @@ export class ConfigService {
     try {
       const data = await fs.readFile(this.configFile, 'utf-8');
       const loadedConfig = JSON.parse(data);
-      
+
       // 合并默认配置和加载的配置
       this.config = this.mergeConfig(DEFAULT_CONFIG, loadedConfig);
-      
+
       // 验证配置
       this.validateConfig();
     } catch (error) {
@@ -99,7 +99,7 @@ export class ConfigService {
 
   private mergeConfig(defaultConfig: AppConfig, loadedConfig: any): AppConfig {
     const merged = { ...defaultConfig };
-    
+
     // 递归合并对象
     const mergeObjects = (target: any, source: any) => {
       for (const key in source) {
@@ -113,7 +113,7 @@ export class ConfigService {
         }
       }
     };
-    
+
     mergeObjects(merged, loadedConfig);
     return merged;
   }
@@ -125,33 +125,33 @@ export class ConfigService {
     } else if (this.config.maxHistoryItems > 1000) {
       this.config.maxHistoryItems = 1000;
     }
-    
+
     if (this.config.floatingBall.opacity < 0.1) {
       this.config.floatingBall.opacity = 0.1;
     } else if (this.config.floatingBall.opacity > 1) {
       this.config.floatingBall.opacity = 1;
     }
-    
+
     if (this.config.floatingBall.size < 40) {
       this.config.floatingBall.size = 40;
     } else if (this.config.floatingBall.size > 100) {
       this.config.floatingBall.size = 100;
     }
-    
+
     if (this.config.mainWindow.width < 400) {
       this.config.mainWindow.width = 400;
     }
-    
+
     if (this.config.mainWindow.height < 300) {
       this.config.mainWindow.height = 300;
     }
-    
+
     if (this.config.clipboard.cleanupDays < 1) {
-        this.config.clipboard.cleanupDays = 1;
-      } else if (this.config.clipboard.cleanupDays > 365) {
-        this.config.clipboard.cleanupDays = 365;
-      }
-    
+      this.config.clipboard.cleanupDays = 1;
+    } else if (this.config.clipboard.cleanupDays > 365) {
+      this.config.clipboard.cleanupDays = 365;
+    }
+
     // 验证主题
     if (!['light', 'dark', 'auto'].includes(this.config.theme)) {
       this.config.theme = 'light';
@@ -165,7 +165,7 @@ export class ConfigService {
         lastUpdated: Date.now(),
         version: '1.0.0'
       };
-      
+
       await fs.writeFile(this.configFile, JSON.stringify(data, null, 2), 'utf-8');
     } catch (error) {
       console.error('Error saving config:', error);
@@ -180,10 +180,10 @@ export class ConfigService {
     try {
       // 深度合并更新
       this.config = this.mergeConfig(this.config, updates);
-      
+
       // 验证配置
       this.validateConfig();
-      
+
       // 保存到文件
       await this.saveConfig();
     } catch (error) {

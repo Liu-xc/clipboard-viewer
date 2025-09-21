@@ -372,7 +372,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
       <Grid gutter="lg" style={{ minHeight: 'calc(100vh - 140px)' }}>
         {/* 目录侧边栏 */}
         {showToc && tableOfContents.length > 0 && (
-          <Grid.Col span={3}>
+          <Grid.Col span={{ base: 12, md: 3 }}>
             <Paper withBorder p="md" style={{ position: 'sticky', top: '1rem', maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
               <Title order={4} size="sm" mb="md">
                 目录
@@ -397,7 +397,7 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
         )}
 
         {/* 主要内容 */}
-        <Grid.Col span={showToc && tableOfContents.length > 0 ? 9 : 12}>
+        <Grid.Col span={{ base: 12, md: showToc && tableOfContents.length > 0 ? 9 : 12 }}>
           <Paper withBorder p="md" style={{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
             {showRawContent ? (
               <Code block>

@@ -1,10 +1,12 @@
 import React from 'react';
-import { NavLink, Stack, Text, Badge, Group } from '@mantine/core';
+import { NavLink, Stack, Text, Badge, Group, ActionIcon, Tooltip } from '@mantine/core';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   IconClipboard,
   IconSettings,
-  IconHeart
+  IconHeart,
+  IconChevronRight,
+  IconChevronLeft
 } from '@tabler/icons-react';
 
 interface NavItem {
@@ -14,7 +16,12 @@ interface NavItem {
   badge?: string | number;
 }
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  expanded: boolean;
+  onToggleExpand: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ expanded, onToggleExpand }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -41,37 +48,65 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <Stack gap="xs">
-      <Text size="sm" fw={500} c="dimmed" mb="xs">
-        导航
-      </Text>
-      
+    <Stack gap="xs" h="100%" style={{ padding: expanded ? '0' : '4px' }}>
+      {/* 展开/收起按钮 */}
+      <ActionIcon
+        variant="subtle"
+        size="sm"
+        onClick={onToggleExpand}
+        style={{
+          alignSelf: expanded ? 'flex-end' : 'center',
+          marginBottom: '8px',
+          width: expanded ? '28px' : '32px',
+          height: expanded ? '28px' : '32px'
+        }}
+      >
+        {expanded ? <IconChevronLeft size={16} /> : <IconChevronRight size={16} />}
+      </ActionIcon>
+
       {navItems.map((item) => (
-        <NavLink
-          key={item.path}
-          label={
-            <Group justify="space-between" w="100%">
-              <Text size="sm">{item.label}</Text>
-              {item.badge && (
-                <Badge size="xs" variant="light">
-                  {item.badge}
-                </Badge>
-              )}
-            </Group>
-          }
-          leftSection={item.icon}
-          active={location.pathname === item.path}
-          onClick={() => handleNavClick(item.path)}
-          style={{
-            borderRadius: '8px',
-            marginBottom: '4px'
-          }}
-        />
+        expanded ? (
+          <NavLink
+            key={item.path}
+            label={
+              <Group justify="space-between" w="100%">
+                <Text size="sm">{item.label}</Text>
+                {item.badge && (
+                  <Badge size="xs" variant="light">
+                    {item.badge}
+                  </Badge>
+                )}
+              </Group>
+            }
+            leftSection={item.icon}
+            active={location.pathname === item.path}
+            onClick={() => handleNavClick(item.path)}
+            style={{
+              borderRadius: '8px',
+              marginBottom: '4px'
+            }}
+          />
+        ) : (
+          <Tooltip key={item.path} label={item.label} position="right">
+            <ActionIcon
+              variant={location.pathname === item.path ? 'filled' : 'subtle'}
+              size="lg"
+              onClick={() => handleNavClick(item.path)}
+              style={{
+                borderRadius: '8px',
+                marginBottom: '4px',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {item.icon}
+            </ActionIcon>
+          </Tooltip>
+        )
       ))}
-      
-      <Text size="xs" c="dimmed" mt="md" ta="center">
-        剪贴板查看器 v1.0.0
-      </Text>
     </Stack>
   );
 };

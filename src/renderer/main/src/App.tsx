@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AppShell, Burger, Group, Text, ActionIcon, Tooltip } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { AppShell, Group, Text, ActionIcon, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconMoon, IconSun } from '@tabler/icons-react';
+import { IconSettings, IconMoon, IconSun, IconClipboard } from '@tabler/icons-react';
 import { useMantineColorScheme } from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
 import Sidebar from './components/Sidebar';
 import ClipboardHistory from './pages/ClipboardHistory';
 import Settings from './pages/Settings';
@@ -14,9 +14,14 @@ import MermaidTest from '../../../pages/MermaidTest';
 import type { AppConfig } from './types';
 
 function App() {
-  const [opened, { toggle }] = useDisclosure();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [config, setConfig] = useState<AppConfig | null>(null);
+  const [collapsed, setCollapsed] = useState(true);
+
+  // 键盘快捷键：Cmd+B (Mac) 或 Ctrl+B (Windows/Linux) 切换导航栏
+  useHotkeys([
+    ['mod+B', () => setCollapsed(!collapsed)]
+  ]);
 
   useEffect(() => {
     // 初始化应用
@@ -99,39 +104,86 @@ function App() {
 
   return (
     <AppShell
-      header={{ height: 60 }}
+      header={{ height: 40 }}
       navbar={{
-        width: 300,
+        width: collapsed ? 60 : 200,
         breakpoint: 'sm',
-        collapsed: { mobile: !opened }
+        collapsed: { desktop: false }
       }}
-      padding="0"
+      padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              hiddenFrom="sm"
-              size="sm"
+        <div style={{ 
+          position: 'relative', 
+          height: '100%', 
+          width: '100%', 
+          display: 'flex', 
+          alignItems: 'center',
+          padding: '0 16px'
+        }}>
+          {/* 居中的标题 */}
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            zIndex: 1
+          }}>
+            <IconClipboard 
+              size={18} 
+              style={{ 
+                color: 'var(--mantine-color-blue-6)',
+                filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))',
+                flexShrink: 0
+              }} 
             />
-            <Text size="lg" fw={600}>
-              剪贴板查看器 - HMR测试
+            <Text 
+              size="md" 
+              fw={700}
+              style={{ 
+                letterSpacing: '0.2px',
+                background: 'linear-gradient(135deg, var(--mantine-color-gray-9) 0%, var(--mantine-color-gray-7) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              剪贴板查看器
             </Text>
-          </Group>
+          </div>
           
-          <Group>
+          {/* 右侧操作按钮组 */}
+          <div style={{
+            position: 'absolute',
+            right: '16px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            zIndex: 2
+          }}>
             <Tooltip label={colorScheme === 'dark' ? '切换到浅色模式' : '切换到深色模式'}>
               <ActionIcon
                 variant="subtle"
-                size="lg"
+                size="md"
                 onClick={handleThemeToggle}
+                style={{ 
+                  borderRadius: '6px',
+                  width: '28px',
+                  height: '28px'
+                }}
               >
                 {colorScheme === 'dark' ? (
-                  <IconSun size={18} />
+                  <IconSun size={14} />
                 ) : (
-                  <IconMoon size={18} />
+                  <IconMoon size={14} />
                 )}
               </ActionIcon>
             </Tooltip>
@@ -139,28 +191,35 @@ function App() {
             <Tooltip label="设置">
               <ActionIcon
                 variant="subtle"
-                size="lg"
+                size="md"
                 onClick={handleSettingsClick}
+                style={{ 
+                  borderRadius: '6px',
+                  width: '28px',
+                  height: '28px'
+                }}
               >
-                <IconSettings size={18} />
+                <IconSettings size={14} />
               </ActionIcon>
             </Tooltip>
-          </Group>
-        </Group>
+            
+
+          </div>
+        </div>
       </AppShell.Header>
 
-      <AppShell.Navbar p="md">
-        <Sidebar />
+      <AppShell.Navbar p={collapsed ? "xs" : "md"}>
+        <Sidebar expanded={!collapsed} onToggleExpand={() => setCollapsed(!collapsed)} />
       </AppShell.Navbar>
 
-      <AppShell.Main style={{ paddingTop: 0 }}>
+      <AppShell.Main>
         <Routes>
           <Route path="/" element={<Navigate to="/history" replace />} />
           <Route path="/history" element={<ClipboardHistory />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/markdown/:id" element={<MarkdownViewer />} />
           <Route path="/mermaid-test" element={<MermaidTest />} />
-
+          <Route path="*" element={<Navigate to="/history" replace />} />
         </Routes>
       </AppShell.Main>
     </AppShell>

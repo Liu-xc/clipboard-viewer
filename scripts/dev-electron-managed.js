@@ -90,7 +90,11 @@ class ElectronManager {
       this.electronProcess = spawn('pnpm', ['run', 'dev:electron'], {
         cwd: process.cwd(),
         stdio: 'inherit',
-        detached: false
+        detached: false,
+        env: {
+          ...process.env,
+          NODE_ENV: 'development'
+        }
       });
 
       this.electronProcess.on('close', (code, signal) => {

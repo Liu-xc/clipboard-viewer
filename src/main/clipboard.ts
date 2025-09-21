@@ -64,9 +64,9 @@ export class ClipboardService extends EventEmitter {
         await this.storageService.addClipboardItem(clipboardItem);
 
         // 发出变化事件
-        console.log('准备发出clipboardChanged事件:', clipboardItem);
+        // console.log('准备发出clipboardChanged事件:', clipboardItem);
         this.emit('clipboardChanged', clipboardItem);
-        console.log('已发出clipboardChanged事件');
+        // console.log('已发出clipboardChanged事件');
 
         console.log('Clipboard changed:', clipboardItem.preview);
       }
@@ -136,7 +136,7 @@ export class ClipboardService extends EventEmitter {
         // 检测 Mermaid 图表类型并生成预览
         const trimmed = content.trim().toLowerCase();
         let diagramType = 'Mermaid 图表';
-        
+
         if (trimmed.startsWith('graph') || trimmed.startsWith('flowchart')) {
           diagramType = '流程图';
         } else if (trimmed.startsWith('sequencediagram')) {
@@ -150,7 +150,7 @@ export class ClipboardService extends EventEmitter {
         } else if (trimmed.startsWith('statediagram')) {
           diagramType = '状态图';
         }
-        
+
         return `${diagramType}: ${content.substring(0, maxLength - diagramType.length - 2)}...`;
 
       case 'html':

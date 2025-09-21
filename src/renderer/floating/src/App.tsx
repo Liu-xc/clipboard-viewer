@@ -69,8 +69,8 @@ const App: React.FC = () => {
         const response = await window.electronAPI.showMainWindow();
         if (!response.success) {
           notifications.show({
-            title: '错误',
-            message: '无法打开主窗口',
+            title: '操作失败',
+            message: '无法打开主界面，请重试',
             color: 'red'
           });
         }
@@ -78,8 +78,8 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Failed to show main window:', error);
       notifications.show({
-        title: '错误',
-        message: '打开主窗口时发生错误',
+        title: '操作失败',
+        message: '打开主界面时发生错误，请重试',
         color: 'red'
       });
     }
@@ -107,8 +107,8 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Failed to hide floating ball:', error);
       notifications.show({
-        title: '错误',
-        message: '隐藏悬浮球时发生错误',
+        title: '操作失败',
+        message: '隐藏悬浮球时发生错误，请重试',
         color: 'red'
       });
     }
@@ -124,8 +124,8 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Failed to quit app:', error);
       notifications.show({
-        title: '错误',
-        message: '退出应用时发生错误',
+        title: '操作失败',
+        message: '退出应用时发生错误，请重试',
         color: 'red'
       });
     }
@@ -156,7 +156,7 @@ const App: React.FC = () => {
     >
       <Menu.Target>
         <Tooltip
-          label="点击打开剪贴板查看器"
+          label="剪贴板查看器"
           position="top"
           withArrow
           openDelay={1000}
@@ -202,7 +202,7 @@ const App: React.FC = () => {
           leftSection={<IconEye size={14} />}
           onClick={handleShowMainWindow}
         >
-          显示主窗口
+          打开主界面
         </Menu.Item>
         <Menu.Item
           leftSection={<IconEyeOff size={14} />}

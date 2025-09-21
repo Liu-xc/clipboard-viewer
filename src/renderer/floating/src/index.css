@@ -32,6 +32,15 @@ html, body {
   padding: 10px;
 }
 
+/* 菜单区域不可拖动 */
+.mantine-Menu-dropdown {
+  -webkit-app-region: no-drag;
+}
+
+.mantine-Tooltip-tooltip {
+  -webkit-app-region: no-drag;
+}
+
 /* 悬浮球容器 */
 .floating-ball {
   position: relative;
@@ -47,6 +56,8 @@ html, body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   -webkit-app-region: no-drag;
+  /* 确保悬浮球本身不可拖动，只有外层容器可拖动 */
+  pointer-events: auto;
 }
 
 .floating-ball:hover {
