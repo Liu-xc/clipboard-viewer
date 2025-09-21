@@ -5,7 +5,13 @@ import type { ElectronAPI } from '../renderer/main/src/types';
 const electronAPI: ElectronAPI = {
   // 剪贴板相关
   getClipboardHistory: () => ipcRenderer.invoke('clipboard:getHistory'),
-
+  copyToClipboard: (content) => ipcRenderer.invoke('clipboard:copy', content),
+  removeClipboardItem: (id) => ipcRenderer.invoke('clipboard:remove', id),
+  toggleFavorite: (id) => ipcRenderer.invoke('clipboard:toggleFavorite', id),
+  clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
+  onClipboardUpdate: (callback) => {
+    ipcRenderer.on('clipboard:update', (_, items) => callback(items));
+  },
   onClipboardChanged: (callback) => {
     console.log('Preload: 注册clipboard:changed事件监听器');
     ipcRenderer.on('clipboard:changed', (_, item) => {
@@ -23,19 +29,37 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.removeAllListeners('clipboard:changed');
     ipcRenderer.removeAllListeners('clipboard:update');
   },
-  
+
   // 窗口控制
   showMainWindow: () => ipcRenderer.invoke('mainWindow:show'),
   hideMainWindow: () => ipcRenderer.invoke('mainWindow:hide'),
 
-  
+
   // 配置管理
   getConfig: () => ipcRenderer.invoke('app:getConfig'),
-  setConfig: (config) => ipcRenderer.invoke('app:updateConfig', config),
-  
+  updateConfig: (config) => ipcRenderer.invoke('app:updateConfig', config),
+  onConfigUpdate: (callback) => {
+    ipcRenderer.on('config:update', (_, config) => callback(config));
+  },
+  exportConfig: () => ipcRenderer.invoke('app:exportConfig'),
+  importConfig: (configData) => ipcRenderer.invoke('app:importConfig', configData),
+
   // 应用控制
   quitApp: () => ipcRenderer.invoke('app:quit'),
-  minimizeToTray: () => ipcRenderer.invoke('app:minimizeToTray')
+  minimizeToTray: () => ipcRenderer.invoke('app:minimizeToTray'),
+
+  // 系统操作
+  openExternal: async (url: string) => {
+    try {
+      console.log('[Preload] Opening external URL in browser:', url);
+      // 直接使用 window.open 在默认浏览器中打开链接
+      window.open(url, '_blank');
+      return { success: true };
+    } catch (error) {
+      console.error('[Preload] Error opening external URL:', error);
+      throw error;
+    }
+  }
 };
 
 // 将 API 暴露给渲染进程
@@ -47,4 +71,5 @@ if (process.env.NODE_ENV === 'development') {
   console.log('Available APIs:', Object.keys(electronAPI));
   console.log('Window location:', window.location.href);
   console.log('IpcRenderer available:', !!ipcRenderer);
+  console.log('ElectronAPI.openExternal available:', typeof electronAPI.openExternal);
 }

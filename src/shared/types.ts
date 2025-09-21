@@ -32,6 +32,7 @@ export interface AppConfig {
     clearHistory: string;
   };
 
+
   mainWindow: {
     width: number;
     height: number;
@@ -90,7 +91,7 @@ export const IPC_CHANNELS = {
   WINDOW_CLOSE: 'window:close',
   WINDOW_HIDE: 'window:hide',
   WINDOW_SHOW: 'window:show',
-  WINDOW_TOGGLE_FLOATING_BALL: 'window:toggle-floating-ball',
+
   
   // 系统相关
   SYSTEM_GET_INFO: 'system:get-info',

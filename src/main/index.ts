@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, globalShortcut, shell } from 'electron';
 import * as path from 'path';
 
 // 扩展 app 对象以包含 isQuitting 属性
@@ -250,6 +250,26 @@ class ClipboardViewerApp {
 
     ipcMain.handle('app:minimizeToTray', () => {
       this.windowManager.hideMainWindow();
+    });
+    
+    // 系统操作
+    ipcMain.handle('shell:openExternal', async (_, url: string) => {
+      try {
+        const parsedUrl = new URL(url);
+        
+        // 只允许 http/https 协议
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+          throw new Error('Only HTTP/HTTPS URLs are allowed');
+        }
+        
+        console.log('主进程: 正在打开外部URL:', url);
+        await shell.openExternal(url);
+        console.log('主进程: 外部URL打开成功');
+        return { success: true };
+      } catch (error) {
+        console.error('主进程: 打开外部URL失败:', error);
+        return { success: false, error: (error as Error).message };
+      }
     });
   }
 

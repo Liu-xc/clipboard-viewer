@@ -10,8 +10,7 @@ graph TD
   C --> E[系统剪贴板 API]
   C --> F[本地文件系统]
   C --> G[系统托盘]
-  C --> H[悬浮球窗口]
-  H --> I[主窗口控制]
+
   
   subgraph "Frontend Layer"
     B
@@ -74,10 +73,7 @@ Response:
 ipcRenderer.on('clipboard:changed', callback)
 ```
 
-**悬浮球窗口控制**
-```typescript
-ipcRenderer.invoke('floatingBall:toggle')
-```
+
 
 **主窗口显示/隐藏**
 ```typescript
@@ -138,7 +134,7 @@ graph TD
   C --> F[Settings Service]
   C --> G[Window Manager Service]
   G --> H[主窗口]
-  G --> I[悬浮球窗口]
+
   
   subgraph "Renderer Process"
     A
@@ -155,7 +151,6 @@ graph TD
   
   subgraph "Windows"
     H
-    I
   end
 ```
 
@@ -215,12 +210,7 @@ interface AppConfig {
   theme: 'light' | 'dark' | 'auto';
   autoCleanup: boolean;
   cleanupDays: number;
-  floatingBall: {
-    enabled: boolean;
-    position: { x: number; y: number };
-    size: number;
-    opacity: number;
-  };
+
 }
 
 // IPC 通信类型
@@ -259,7 +249,7 @@ clipboard-viewer/
 │   │   ├── storage.ts       # 数据存储服务
 │   │   ├── config.ts        # 配置管理
 │   │   ├── windowManager.ts # 窗口管理服务
-│   │   └── floatingBall.ts  # 悬浮球窗口控制
+
 │   ├── renderer/            # React 渲染进程
 │   │   ├── main/            # 主窗口
 │   │   │   ├── src/
@@ -281,12 +271,7 @@ clipboard-viewer/
 │   │   │   └── App.tsx      # 应用根组件
 │   │   │   ├── index.html       # HTML 模板
 │   │   │   └── vite.config.ts   # Vite 配置
-│   │   └── floating/        # 悬浮球窗口
-│   │       ├── src/
-│   │       │   ├── FloatingBall.tsx  # 悬浮球组件
-│   │       │   └── index.tsx         # 悬浮球入口
-│   │       ├── floating.html         # 悬浮球 HTML
-│   │       └── vite.config.ts        # 悬浮球 Vite 配置
+
 │   └── preload/             # 预加载脚本
 │       └── index.ts
 ├── package.json

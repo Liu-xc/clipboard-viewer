@@ -47,6 +47,9 @@ export interface ElectronAPI {
   // 应用控制
   quitApp: () => Promise<void>;
   minimizeToTray: () => Promise<void>;
+  
+  // 系统操作
+  openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 // 全局声明

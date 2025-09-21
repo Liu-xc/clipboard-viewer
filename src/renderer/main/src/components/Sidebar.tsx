@@ -5,7 +5,8 @@ import {
   IconClipboard,
   IconHeart,
   IconChevronRight,
-  IconChevronLeft
+  IconChevronLeft,
+  IconTestPipe
 } from '@tabler/icons-react';
 
 interface NavItem {
@@ -34,6 +35,11 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onToggleExpand }) => {
       label: '收藏夹',
       icon: <IconHeart size={18} />,
       path: '/favorites'
+    },
+    {
+      label: 'Markdown 测试',
+      icon: <IconTestPipe size={18} />,
+      path: '/test-markdown'
     }
   ];
 

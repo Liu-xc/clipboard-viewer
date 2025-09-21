@@ -76,6 +76,37 @@ sequenceDiagram
   },
 };
 
+// Test links and images interaction
+export const LinksAndImages: Story = {
+  args: {
+    content: `# 链接和图片交互测试
+
+## 链接测试
+
+点击以下链接应该在浏览器中打开：
+
+- [GitHub](https://github.com)
+- [Google](https://google.com)
+- [百度](https://baidu.com)
+
+## 图片测试
+
+点击以下图片应该全屏预览：
+
+![测试图片1](https://picsum.photos/400/300?random=1)
+
+![测试图片2](https://picsum.photos/500/400?random=2)
+
+## 混合内容
+
+这是一个包含 [链接](https://example.com) 和图片的段落：
+
+![小图片](https://picsum.photos/200/150?random=3)
+
+更多文本内容...`
+  }
+};
+
 // Complex markdown with tables and code
 export const Complex: Story = {
   args: {

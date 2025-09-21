@@ -15,8 +15,7 @@ export interface ElectronAPI {
   // 窗口控制
   showMainWindow: () => Promise<IpcResponse<boolean>>;
   hideMainWindow: () => Promise<IpcResponse<boolean>>;
-  toggleFloatingBall: () => Promise<IpcResponse<boolean>>;
-  updateFloatingBallPosition: (x: number, y: number) => Promise<IpcResponse<boolean>>;
+
   
   // 配置管理
   getConfig: () => Promise<IpcResponse<AppConfig>>;
@@ -28,6 +27,9 @@ export interface ElectronAPI {
   // 应用控制
   quitApp: () => Promise<IpcResponse<boolean>>;
   minimizeToTray: () => Promise<IpcResponse<boolean>>;
+  
+  // 系统操作
+  openExternal: (url: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 // 扩展 Window 接口

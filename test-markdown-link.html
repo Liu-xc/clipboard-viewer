@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Markdown 链接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .markdown-content {
+            line-height: 1.6;
+        }
+        .markdown-content a {
+            color: #0066cc;
+            text-decoration: underline;
+        }
+        .markdown-content a:hover {
+            color: #004499;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .success-box {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Clipboard Viewer - Markdown 链接测试</h1>
+    
+    <div class="success-box">
+        <h3>✅ 修改完成</h3>
+        <p>已修改 <code>src/main/index.ts</code> 中的 <code>shell:openExternal</code> 处理器，现在链接将：</p>
+        <ul>
+            <li><strong>macOS</strong>: 使用 <code>open</code> 命令在已有浏览器中打开新标签页</li>
+            <li><strong>Windows</strong>: 使用 <code>start</code> 命令在已有浏览器中打开新标签页</li>
+            <li><strong>Linux</strong>: 使用 <code>xdg-open</code> 命令在已有浏览器中打开新标签页</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔗 测试链接</h2>
+        <div class="markdown-content">
+            <p>以下是一些测试链接，在 Electron 应用中点击这些链接应该会在你的默认浏览器中打开新标签页：</p>
+            
+            <ul>
+                <li><a href="https://github.com">GitHub 官网</a></li>
+                <li><a href="https://www.npmjs.com">NPM 官网</a></li>
+                <li><a href="https://reactjs.org">React 官方文档</a></li>
+                <li><a href="https://www.electronjs.org">Electron 官网</a></li>
+                <li><a href="https://mantine.dev">Mantine UI 库</a></li>
+            </ul>
+            
+            <p>中文网站测试：</p>
+            <ul>
+                <li><a href="https://www.baidu.com">百度</a></li>
+                <li><a href="https://www.zhihu.com">知乎</a></li>
+                <li><a href="https://juejin.cn">掘金</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="info-box">
+        <h3>🧪 测试说明</h3>
+        <ul>
+            <li><strong>在 Electron 应用中</strong>：点击链接应该在你的默认浏览器中打开新标签页</li>
+            <li><strong>在浏览器中</strong>：这个页面只是用于展示，实际功能需要在 Electron 应用中测试</li>
+            <li><strong>预期行为</strong>：如果你已经打开了浏览器，链接会在现有浏览器窗口中打开新标签页</li>
+            <li><strong>回退机制</strong>：如果系统命令失败，会自动回退到 Electron 的默认行为</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 技术实现</h2>
+        <p>修改后的实现使用了跨平台的系统命令：</p>
+        <ul>
+            <li><strong>macOS</strong>: <code>open "url"</code> - 在默认浏览器中打开链接</li>
+            <li><strong>Windows</strong>: <code>start "" "url"</code> - 在默认浏览器中打开链接</li>
+            <li><strong>Linux</strong>: <code>xdg-open "url"</code> - 在默认浏览器中打开链接</li>
+        </ul>
+        <p>这些命令会优先在已有的浏览器实例中打开新标签页，而不是启动新的浏览器窗口。</p>
+    </div>
+    
+    <div class="info-box">
+        <h3>📝 如何测试</h3>
+        <ol>
+            <li>确保 Electron 应用正在运行</li>
+            <li>在应用中打开包含链接的 Markdown 内容</li>
+            <li>点击链接</li>
+            <li>观察是否在已有浏览器窗口中打开了新标签页</li>
+        </ol>
+    </div>
+</body>
+</html>

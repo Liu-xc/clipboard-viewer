@@ -196,7 +196,7 @@ class ProcessManager {
       // 清理可能残留的 Vite 进程
       "pkill -f 'vite'",
       "pkill -f 'dev:renderer'",
-      "pkill -f 'dev:floating'",
+
       // 清理 Node 进程
       "pkill -f 'node.*5173'",
       
@@ -250,14 +250,7 @@ async function main() {
       }
     );
     
-    manager.startFrontendProcess(
-      'floating',
-      'pnpm',
-      ['run', 'dev:floating'],
-      {
-        stdio: 'inherit'
-      }
-    );
+
     
     // 等待前端服务就绪，然后启动 Electron
     console.log('⏳ 等待前端服务就绪...');

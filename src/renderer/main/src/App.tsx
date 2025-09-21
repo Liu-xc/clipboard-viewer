@@ -10,6 +10,7 @@ import ClipboardHistory from './pages/ClipboardHistory';
 import MarkdownViewer from '../../../pages/MarkdownViewer';
 import MermaidTest from '../../../pages/MermaidTest';
 import Favorites from './pages/Favorites';
+import TestMarkdown from './pages/TestMarkdown';
 
 import type { AppConfig } from './types';
 
@@ -204,6 +205,7 @@ function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/markdown/:id" element={<MarkdownViewer />} />
           <Route path="/mermaid-test" element={<MermaidTest />} />
+          <Route path="/test-markdown" element={<TestMarkdown />} />
           <Route path="*" element={<Navigate to="/history" replace />} />
         </Routes>
       </AppShell.Main>

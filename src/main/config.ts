@@ -22,7 +22,6 @@ const DEFAULT_CONFIG: AppConfig = {
   },
   hotkeys: {
     toggleMainWindow: 'CommandOrControl+Shift+V',
-    toggleFloatingBall: 'CommandOrControl+Shift+B',
     clearHistory: 'CommandOrControl+Shift+C'
   },
 
@@ -117,17 +116,7 @@ export class ConfigService {
       this.config.maxHistoryItems = 1000;
     }
 
-    if (this.config.floatingBall.opacity < 0.1) {
-      this.config.floatingBall.opacity = 0.1;
-    } else if (this.config.floatingBall.opacity > 1) {
-      this.config.floatingBall.opacity = 1;
-    }
 
-    if (this.config.floatingBall.size < 40) {
-      this.config.floatingBall.size = 40;
-    } else if (this.config.floatingBall.size > 100) {
-      this.config.floatingBall.size = 100;
-    }
 
     if (this.config.mainWindow.width < 400) {
       this.config.mainWindow.width = 400;

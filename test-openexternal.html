@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test OpenExternal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test OpenExternal Function</h1>
+    
+    <div class="test-section">
+        <h3>Shell Module Status</h3>
+        <button onclick="checkShellStatus()">Check Shell Status</button>
+        <div id="shell-status" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test External Links</h3>
+        <button onclick="testOpenExternal('https://www.google.com')">Open Google</button>
+        <button onclick="testOpenExternal('https://github.com')">Open GitHub</button>
+        <button onclick="testOpenExternal('http://example.com')">Open Example.com</button>
+        <button onclick="testOpenExternal('ftp://invalid.com')">Test Invalid Protocol (should fail)</button>
+        <div id="test-results" class="log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('test-results');
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+        }
+
+        function checkShellStatus() {
+            const statusElement = document.getElementById('shell-status');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            if (window.electronAPI) {
+                statusElement.textContent = `[${timestamp}] ElectronAPI available: ✅\n`;
+                statusElement.textContent += `OpenExternal function: ${typeof window.electronAPI.openExternal}\n`;
+            } else {
+                statusElement.textContent = `[${timestamp}] ElectronAPI not available: ❌\n`;
+            }
+        }
+
+        async function testOpenExternal(url) {
+            log(`Testing URL: ${url}`);
+            
+            if (!window.electronAPI || !window.electronAPI.openExternal) {
+                log('❌ ElectronAPI.openExternal not available');
+                return;
+            }
+
+            try {
+                const result = await window.electronAPI.openExternal(url);
+                if (result.success) {
+                    log(`✅ Successfully opened: ${url}`);
+                } else {
+                    log(`❌ Failed to open: ${url} - ${result.error}`);
+                }
+            } catch (error) {
+                log(`❌ Exception: ${error.message}`);
+            }
+        }
+
+        // 页面加载时检查状态
+        window.addEventListener('DOMContentLoaded', () => {
+            checkShellStatus();
+            log('Test page loaded. Ready to test openExternal function.');
+        });
+    </script>
+</body>
+</html>
