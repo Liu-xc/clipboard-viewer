@@ -8,7 +8,7 @@
     "dev:frontend": "node scripts/dev-frontend-managed.js",
     "dev:renderer": "vite --config src/renderer/main/vite.config.mjs",
     "dev:floating": "vite --config src/renderer/floating/vite.config.mjs",
-    "dev:electron": "electron .",
+    "dev:electron": "NODE_ENV=development electron .",
     "dev:electron:managed": "node scripts/dev-electron-managed.js",
     "build": "pnpm run build:renderer && pnpm run build:floating && pnpm run build:main && pnpm run build:preload",
     "build:renderer": "vite build --config src/renderer/main/vite.config.mjs",
