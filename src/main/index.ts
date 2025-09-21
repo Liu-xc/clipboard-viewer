@@ -302,15 +302,140 @@ class ClipboardViewerApp {
     });
   }
 
-  private quitApp() {
+  private async quitApp() {
     // 设置退出标志，通知窗口管理器应用正在退出
     this.windowManager.setAppQuitting(true);
     
     // 设置应用退出标志
     (app as any).isQuitting = true;
     
+    // 如果是开发模式，停止开发服务器进程
+    if (isDev) {
+      await this.stopDevServer();
+    }
+    
     // 退出应用，before-quit 事件会处理清理逻辑
     app.quit();
+  }
+
+  private async stopDevServer() {
+    try {
+      console.log('正在停止开发服务器...');
+      
+      // 查找并终止开发服务器进程
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execAsync = util.promisify(exec);
+      
+      // 扩展端口检查范围，包括常见的开发服务器端口
+      const ports = [3000, 5173, 5174, 8080, 8081];
+      
+      // 1. 首先终止占用端口的进程
+      for (const port of ports) {
+        try {
+          // 在macOS上查找占用指定端口的进程
+          const { stdout } = await execAsync(`lsof -ti:${port}`);
+          const pids = stdout.trim().split('\n').filter((pid: string) => pid);
+          
+          for (const pid of pids) {
+            if (pid) {
+              console.log(`终止端口 ${port} 上的进程 ${pid}`);
+              try {
+                process.kill(parseInt(pid), 'SIGTERM');
+                // 等待进程优雅退出
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 检查进程是否还在运行，如果是则强制终止
+                try {
+                  process.kill(parseInt(pid), 0); // 检查进程是否存在
+                  console.log(`强制终止进程 ${pid}`);
+                  process.kill(parseInt(pid), 'SIGKILL');
+                } catch {
+                  // 进程已经终止
+                  console.log(`进程 ${pid} 已成功终止`);
+                }
+              } catch (error) {
+                console.log(`终止进程 ${pid} 失败:`, (error as Error).message);
+              }
+            }
+          }
+        } catch (error) {
+          // 端口未被占用或查找失败，继续处理下一个端口
+          console.log(`端口 ${port} 未被占用或查找失败:`, (error as Error).message);
+        }
+      }
+      
+      // 2. 查找并终止所有相关的node进程
+      try {
+        console.log('查找相关的开发进程...');
+        const keywords = ['vite', 'electron', 'wait-on', 'dev-server', 'webpack'];
+        
+        for (const keyword of keywords) {
+          try {
+            // 查找包含关键词的node进程
+            const { stdout } = await execAsync(`ps aux | grep "${keyword}" | grep -v grep | awk '{print $2}'`);
+            const pids = stdout.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
+            
+            for (const pid of pids) {
+              if (pid && parseInt(pid) !== process.pid) { // 不要终止当前进程
+                console.log(`终止包含 "${keyword}" 的进程 ${pid}`);
+                try {
+                  process.kill(parseInt(pid), 'SIGTERM');
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                  
+                  // 检查并强制终止
+                  try {
+                    process.kill(parseInt(pid), 0);
+                    process.kill(parseInt(pid), 'SIGKILL');
+                  } catch {
+                    // 进程已终止
+                  }
+                } catch (error) {
+                  console.log(`终止进程 ${pid} 失败:`, (error as Error).message);
+                }
+              }
+            }
+          } catch (error) {
+            console.log(`查找 "${keyword}" 进程失败:`, (error as Error).message);
+          }
+        }
+      } catch (error) {
+        console.log('查找相关进程时出错:', (error as Error).message);
+      }
+      
+      // 3. 尝试终止整个进程组（如果有的话）
+      try {
+        // 查找当前应用的子进程
+        const { stdout } = await execAsync(`pgrep -P ${process.pid}`);
+        const childPids = stdout.trim().split('\n').filter((pid: string) => pid);
+        
+        for (const pid of childPids) {
+          if (pid) {
+            console.log(`终止子进程 ${pid}`);
+            try {
+              process.kill(parseInt(pid), 'SIGTERM');
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
+              try {
+                process.kill(parseInt(pid), 0);
+                process.kill(parseInt(pid), 'SIGKILL');
+              } catch {
+                // 进程已终止
+              }
+            } catch (error) {
+              console.log(`终止子进程 ${pid} 失败:`, (error as Error).message);
+            }
+          }
+        }
+      } catch (error) {
+        console.log('查找子进程失败:', (error as Error).message);
+      }
+      
+      console.log('开发服务器停止完成');
+    } catch (error) {
+      console.error('停止开发服务器时出错:', error);
+      // 不阻止应用退出，继续执行退出流程
+    }
   }
 }
 
