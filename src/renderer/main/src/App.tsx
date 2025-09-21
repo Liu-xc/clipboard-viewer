@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell, Group, Text, ActionIcon, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconMoon, IconSun, IconClipboard } from '@tabler/icons-react';
+import { IconMoon, IconSun, IconClipboard } from '@tabler/icons-react';
 import { useMantineColorScheme } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import Sidebar from './components/Sidebar';
 import ClipboardHistory from './pages/ClipboardHistory';
-import Settings from './pages/Settings';
 import MarkdownViewer from '../../../pages/MarkdownViewer';
 import MermaidTest from '../../../pages/MermaidTest';
 
@@ -98,9 +97,7 @@ function App() {
     }
   };
 
-  const handleSettingsClick = () => {
-    // 导航到设置页面的逻辑将在路由中处理
-  };
+
 
   return (
     <AppShell
@@ -188,20 +185,7 @@ function App() {
               </ActionIcon>
             </Tooltip>
             
-            <Tooltip label="设置">
-              <ActionIcon
-                variant="subtle"
-                size="md"
-                onClick={handleSettingsClick}
-                style={{ 
-                  borderRadius: '6px',
-                  width: '28px',
-                  height: '28px'
-                }}
-              >
-                <IconSettings size={14} />
-              </ActionIcon>
-            </Tooltip>
+
             
 
           </div>
@@ -216,7 +200,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/history" replace />} />
           <Route path="/history" element={<ClipboardHistory />} />
-          <Route path="/settings" element={<Settings />} />
           <Route path="/markdown/:id" element={<MarkdownViewer />} />
           <Route path="/mermaid-test" element={<MermaidTest />} />
           <Route path="*" element={<Navigate to="/history" replace />} />

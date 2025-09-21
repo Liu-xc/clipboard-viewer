@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import { Button } from '@mantine/core';
-import { IconSettings, IconDownload } from '@tabler/icons-react';
+import { IconDownload } from '@tabler/icons-react';
 import PageHeader from './PageHeader';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -61,8 +61,8 @@ export const WithSubtitle: Story = {
 // 带右侧操作按钮
 export const WithRightSection: Story = {
   args: {
-    title: '设置页面',
-    subtitle: '配置应用程序选项',
+    title: '文档页面',
+    subtitle: '查看和管理文档内容',
     onBack: action('back-clicked'),
     rightSection: (
       <>
@@ -72,12 +72,6 @@ export const WithRightSection: Story = {
           onClick={action('download-clicked')}
         >
           导出
-        </Button>
-        <Button
-          leftSection={<IconSettings size={16} />}
-          onClick={action('settings-clicked')}
-        >
-          设置
         </Button>
       </>
     ),

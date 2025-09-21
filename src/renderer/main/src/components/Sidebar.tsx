@@ -3,7 +3,6 @@ import { NavLink, Stack, Text, Badge, Group, ActionIcon, Tooltip } from '@mantin
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   IconClipboard,
-  IconSettings,
   IconHeart,
   IconChevronRight,
   IconChevronLeft
@@ -35,11 +34,6 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onToggleExpand }) => {
       label: '收藏夹',
       icon: <IconHeart size={18} />,
       path: '/favorites'
-    },
-    {
-      label: '设置',
-      icon: <IconSettings size={18} />,
-      path: '/settings'
     }
   ];
 
