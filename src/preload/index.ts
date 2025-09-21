@@ -5,10 +5,10 @@ import type { ElectronAPI } from '../renderer/main/src/types';
 const electronAPI: ElectronAPI = {
   // 剪贴板相关
   getClipboardHistory: () => ipcRenderer.invoke('clipboard:getHistory'),
-  copyToClipboard: (content) => ipcRenderer.invoke('clipboard:copy', content),
-  removeClipboardItem: (id) => ipcRenderer.invoke('clipboard:remove', id),
+  copyToClipboard: (content) => ipcRenderer.invoke('clipboard:copyToClipboard', content),
+  removeClipboardItem: (id) => ipcRenderer.invoke('clipboard:removeItem', id),
   toggleFavorite: (id) => ipcRenderer.invoke('clipboard:toggleFavorite', id),
-  clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clear'),
+  clearClipboardHistory: () => ipcRenderer.invoke('clipboard:clearHistory'),
   onClipboardUpdate: (callback) => {
     ipcRenderer.on('clipboard:update', (_, items) => callback(items));
   },

@@ -406,45 +406,95 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
             ) : (
               (() => {
                 const content = clipboardItem?.content || directContent || '';
-                const isMarkdown = detectMarkdown(content);
+                const itemType = clipboardItem?.type;
                 
-                if (isMarkdown) {
+                // 根据类型处理不同的内容
+                if (itemType === 'image') {
                   return (
-                    <MarkdownRenderer
-                      content={content}
-                      options={renderOptions}
-                    />
+                    <div>
+                      <Text size="sm" c="dimmed" mb="md">
+                        图片内容：
+                      </Text>
+                      <img 
+                        src={content} 
+                        alt="剪贴板图片" 
+                        style={{ 
+                          maxWidth: '100%', 
+                          height: 'auto',
+                          border: '1px solid #e0e0e0',
+                          borderRadius: '8px'
+                        }} 
+                      />
+                    </div>
                   );
-                } else {
-                  // 检测是否为代码内容
-                  const isCodeContent = detectCodeContent(content);
-                  
-                  if (isCodeContent) {
-                    // 将代码内容包装为 Markdown 代码块并通过 MarkdownRenderer 渲染
-                    const wrappedContent = wrapAsCodeBlock(content);
-                    return (
+                } else if (itemType === 'html') {
+                  return (
+                    <div>
+                      <Text size="sm" c="dimmed" mb="md">
+                        HTML 内容：
+                      </Text>
+                      <div style={{ marginBottom: '16px' }}>
+                        <Text size="xs" c="dimmed">渲染预览：</Text>
+                        <div 
+                          style={{ 
+                            border: '1px solid #e0e0e0', 
+                            borderRadius: '8px', 
+                            padding: '16px',
+                            marginTop: '8px'
+                          }}
+                          dangerouslySetInnerHTML={{ __html: content }}
+                        />
+                      </div>
                       <div>
-                        <Text size="sm" c="dimmed" mb="md">
-                          检测到代码内容，以语法高亮显示：
-                        </Text>
+                        <Text size="xs" c="dimmed">源代码：</Text>
                         <MarkdownRenderer
-                          content={wrappedContent}
+                          content={wrapAsCodeBlock(content, 'html')}
                           options={renderOptions}
                         />
                       </div>
+                    </div>
+                  );
+                } else {
+                  const isMarkdown = detectMarkdown(content);
+                  
+                  if (isMarkdown) {
+                    return (
+                      <MarkdownRenderer
+                        content={content}
+                        options={renderOptions}
+                      />
                     );
                   } else {
-                    // 对于普通文本内容，以预格式化文本显示
-                    return (
-                      <div>
-                        <Text size="sm" c="dimmed" mb="md">
-                          检测到纯文本内容，以预格式化文本显示：
-                        </Text>
-                        <Code block style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                          {content}
-                        </Code>
-                      </div>
-                    );
+                    // 检测是否为代码内容
+                    const isCodeContent = detectCodeContent(content);
+                    
+                    if (isCodeContent || itemType === 'code') {
+                      // 将代码内容包装为 Markdown 代码块并通过 MarkdownRenderer 渲染
+                      const wrappedContent = wrapAsCodeBlock(content);
+                      return (
+                        <div>
+                          <Text size="sm" c="dimmed" mb="md">
+                            检测到代码内容，以语法高亮显示：
+                          </Text>
+                          <MarkdownRenderer
+                            content={wrappedContent}
+                            options={renderOptions}
+                          />
+                        </div>
+                      );
+                    } else {
+                      // 对于普通文本内容，以预格式化文本显示
+                      return (
+                        <div>
+                          <Text size="sm" c="dimmed" mb="md">
+                            检测到纯文本内容，以预格式化文本显示：
+                          </Text>
+                          <Code block style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                            {content}
+                          </Code>
+                        </div>
+                      );
+                    }
                   }
                 }
               })()

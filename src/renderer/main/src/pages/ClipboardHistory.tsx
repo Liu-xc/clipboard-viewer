@@ -77,6 +77,24 @@ const ClipboardHistory: React.FC = () => {
         // 在 web 环境中提供测试数据
         const mockData: ClipboardItem[] = [
           {
+            id: 'test-image-1',
+            content: 'https://via.placeholder.com/400x300/4CAF50/FFFFFF?text=Test+Image',
+            preview: '测试图片 (400x300)',
+            type: 'image',
+            timestamp: Date.now() - 1000 * 60 * 1,
+            favorite: false,
+            tags: ['图片', '测试']
+          },
+          {
+            id: 'test-html-1',
+            content: '<div style="padding: 20px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); color: white; border-radius: 10px; text-align: center;"><h2>HTML 内容示例</h2><p>这是一个包含样式的 HTML 片段</p><button style="background: white; color: #333; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">点击按钮</button></div>',
+            preview: 'HTML 内容示例 - 包含样式和按钮',
+            type: 'html',
+            timestamp: Date.now() - 1000 * 60 * 1.5,
+            favorite: false,
+            tags: ['HTML', '样式']
+          },
+          {
             id: 'test-code-1',
             content: 'function calculateSum(a, b) {\n  return a + b;\n}\n\nconst result = calculateSum(5, 3);\nconsole.log(result);',
             preview: 'function calculateSum(a, b) {\n  return a + b;\n}\n\nconst result = calculateSum(5, 3);\nconsole.log(result);',
@@ -95,6 +113,15 @@ const ClipboardHistory: React.FC = () => {
             tags: ['测试', 'mermaid']
           },
           {
+            id: 'test-file-1',
+            content: '/Users/test/documents/example.pdf',
+            preview: 'example.pdf',
+            type: 'file',
+            timestamp: Date.now() - 1000 * 60 * 6,
+            favorite: false,
+            tags: ['文件', 'PDF']
+          },
+          {
             id: 'test-code-2',
             content: 'def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(10))',
             preview: 'def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(10))',
@@ -105,7 +132,7 @@ const ClipboardHistory: React.FC = () => {
           },
           {
             id: 'test-text-1',
-            content: '# 这是一个标题\n\n这是一些普通文本内容。',
+            content: '# 这是一个标题\n\n这是一些普通文本内容。\n\n## 子标题\n\n- 列表项 1\n- 列表项 2\n- 列表项 3\n\n**粗体文本** 和 *斜体文本*',
             preview: '# 这是一个标题\n\n这是一些普通文本内容。',
             type: 'text',
             timestamp: Date.now() - 1000 * 60 * 10,
@@ -220,6 +247,32 @@ const ClipboardHistory: React.FC = () => {
 
 
 
+  const handleClearAll = async () => {
+    try {
+      if (window.electronAPI) {
+        const response = await window.electronAPI.clearClipboardHistory();
+        if (response.success) {
+          setClipboardItems([]);
+          
+          notifications.show({
+            title: '清除成功',
+            message: '所有剪贴板历史已清除',
+            color: 'green',
+            autoClose: 2000
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to clear clipboard history:', error);
+      notifications.show({
+        title: '清除失败',
+        message: '清除剪贴板历史时发生错误',
+        color: 'red',
+        autoClose: 3000
+      });
+    }
+  };
+
   const handleRefresh = () => {
     loadClipboardHistory();
   };
@@ -237,6 +290,7 @@ const ClipboardHistory: React.FC = () => {
       onCopy={handleCopyToClipboard}
       onToggleFavorite={handleToggleFavorite}
       onDelete={handleDeleteItem}
+      onClearAll={handleClearAll}
     />
   );
 };

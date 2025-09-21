@@ -1,7 +1,7 @@
 // 共享类型定义
 export interface ClipboardItem {
   id: string;
-  type: 'text' | 'image' | 'file' | 'html' | 'mermaid';
+  type: 'text' | 'image' | 'file' | 'html' | 'mermaid' | 'code';
   content: string;
   timestamp: number;
   size?: number;

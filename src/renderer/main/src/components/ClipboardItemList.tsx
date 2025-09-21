@@ -21,6 +21,7 @@ import {
   SimpleGrid,
   SegmentedControl,
 } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import Masonry from 'react-masonry-css';
 import {
   IconSearch,
@@ -38,7 +39,9 @@ import {
   IconMarkdown,
   IconEye,
   IconList,
-  IconLayoutGrid
+  IconLayoutGrid,
+  IconTrashX,
+  IconAlertTriangle
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
@@ -59,6 +62,7 @@ interface ClipboardItemListProps {
   onCopy?: (item: ClipboardItem) => void;
   onToggleFavorite?: (item: ClipboardItem) => void;
   onDelete?: (item: ClipboardItem) => void;
+  onClearAll?: () => void;
   showViewModeToggle?: boolean;
 }
 
@@ -75,6 +79,7 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
   onCopy,
   onToggleFavorite,
   onDelete,
+  onClearAll,
   showViewModeToggle = true
 }) => {
   const navigate = useNavigate();
@@ -138,9 +143,8 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
     .sort((a, b) => b.timestamp - a.timestamp);
 
   const handleCardClick = (item: ClipboardItem) => {
-    if (item.type === 'text' || item.type === 'mermaid' || item.type === 'file' || item.type === 'code') {
-      navigate(`/markdown/${item.id}`);
-    }
+    // 所有类型都可以跳转到 markdown 页面
+    navigate(`/markdown/${item.id}`);
   };
 
   const renderClipboardItem = (item: ClipboardItem) => {
@@ -151,7 +155,7 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
         padding="md" 
         radius="md" 
         className="clipboard-item"
-        style={{ cursor: (item.type === 'text' || item.type === 'mermaid' || item.type === 'file' || item.type === 'code') ? 'pointer' : 'default' }}
+        style={{ cursor: 'pointer' }}
         onClick={() => handleCardClick(item)}
       >
         <Group justify="space-between" mb="xs">
@@ -204,17 +208,19 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
                 >
                   复制
                 </Menu.Item>
-                {(isMarkdown(item) || item.type === 'mermaid' || item.type === 'file' || item.type === 'code') && (
-                  <Menu.Item
-                    leftSection={<IconEye size={14} />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewMarkdown(item);
-                    }}
-                  >
-                      {item.type === 'mermaid' ? '查看图表' : item.type === 'file' ? '查看 Markdown' : item.type === 'code' ? '查看代码' : '查看 Markdown'}
-                    </Menu.Item>
-                )}
+                <Menu.Item
+                  leftSection={<IconEye size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewMarkdown(item);
+                  }}
+                >
+                  {item.type === 'mermaid' ? '查看图表' : 
+                   item.type === 'file' ? '查看 Markdown' : 
+                   item.type === 'code' ? '查看代码' : 
+                   item.type === 'image' ? '查看图片' :
+                   item.type === 'html' ? '查看 HTML' : '查看内容'}
+                </Menu.Item>
                 {onToggleFavorite && (
                   <Menu.Item
                     leftSection={item.favorite ? <IconHeartFilled size={14} /> : <IconHeart size={14} />}
@@ -396,6 +402,36 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
                 onClick={onRefresh}
               >
                 刷新
+              </Button>
+            )}
+            {onClearAll && items.length > 0 && (
+              <Button
+                variant="light"
+                color="red"
+                leftSection={<IconTrashX size={16} />}
+                onClick={() => {
+                  modals.openConfirmModal({
+                    title: '确认清除所有数据',
+                    children: (
+                      <Stack gap="md">
+                        <Group gap="sm">
+                          <IconAlertTriangle size={20} color="orange" />
+                          <Text size="sm">
+                            此操作将永久删除所有剪贴板历史记录，无法恢复。
+                          </Text>
+                        </Group>
+                        <Text size="sm" c="dimmed">
+                          确定要继续吗？
+                        </Text>
+                      </Stack>
+                    ),
+                    labels: { confirm: '确认删除', cancel: '取消' },
+                    confirmProps: { color: 'red' },
+                    onConfirm: onClearAll,
+                  });
+                }}
+              >
+                清除所有
               </Button>
             )}
           </Group>
