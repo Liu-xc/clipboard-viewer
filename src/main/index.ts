@@ -34,27 +34,27 @@ class ClipboardViewerApp {
 
     // 设置应用事件监听
     this.setupAppEvents();
-    
+
     // 设置 IPC 处理器
     this.setupIPCHandlers();
-    
+
     // 等待应用准备就绪
     await app.whenReady();
-    
+
     // 创建系统托盘
     this.createTray();
-    
+
     // 初始化服务
     await this.configService.initialize();
     await this.storageService.initialize(); // 添加StorageService初始化
     await this.clipboardService.initialize();
-    
+
     // 创建窗口
     await this.windowManager.createMainWindow();
-    
+
     // 开始监听剪贴板
     this.clipboardService.startMonitoring();
-    
+
     // 监听剪贴板变化
     this.clipboardService.on('clipboardChanged', (item) => {
       console.log('主进程接收到clipboardChanged事件:', item);
@@ -78,7 +78,7 @@ class ClipboardViewerApp {
       } else {
         this.windowManager.showMainWindow();
       }
-      
+
       // 确保剪贴板监听在激活时重新启动
       if (!this.clipboardService.isMonitoringActive()) {
         this.clipboardService.startMonitoring();
@@ -94,16 +94,16 @@ class ClipboardViewerApp {
       // 设置应用退出标志
       (app as any).isQuitting = true;
       this.windowManager.setAppQuitting(true);
-      
+
       // 停止剪贴板监听
       this.clipboardService.stopMonitoring();
-      
+
       // 清理托盘
       if (this.tray && !this.tray.isDestroyed()) {
         this.tray.destroy();
         this.tray = null;
       }
-      
+
       // 清理全局快捷键
       globalShortcut.unregisterAll();
     });
@@ -128,15 +128,15 @@ class ClipboardViewerApp {
       try {
         // 设置剪贴板内容
         this.clipboardService.setClipboardContent(content);
-        
+
         // 创建剪贴板项目并添加到历史记录
         const clipboardItem = await this.clipboardService.createClipboardItem(content);
         await this.storageService.addClipboardItem(clipboardItem);
-        
+
         // 通知所有窗口更新历史记录
         const history = await this.storageService.getClipboardHistory();
         this.windowManager.sendToMainWindow('clipboard:update', history);
-        
+
         return { success: true, data: true };
       } catch (error) {
         return { success: false, error: (error as Error).message };
@@ -251,17 +251,17 @@ class ClipboardViewerApp {
     ipcMain.handle('app:minimizeToTray', () => {
       this.windowManager.hideMainWindow();
     });
-    
+
     // 系统操作
     ipcMain.handle('shell:openExternal', async (_, url: string) => {
       try {
         const parsedUrl = new URL(url);
-        
+
         // 只允许 http/https 协议
         if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
           throw new Error('Only HTTP/HTTPS URLs are allowed');
         }
-        
+
         console.log('主进程: 正在打开外部URL:', url);
         await shell.openExternal(url);
         console.log('主进程: 外部URL打开成功');
@@ -278,9 +278,9 @@ class ClipboardViewerApp {
     const trayIcon = nativeImage.createFromPath(
       path.join(__dirname, isDev ? '../../assets' : '../assets', 'tray-icon.png')
     );
-    
+
     this.tray = new Tray(trayIcon);
-    
+
     const contextMenu = Menu.buildFromTemplate([
       {
         label: '显示主窗口',
@@ -293,10 +293,10 @@ class ClipboardViewerApp {
         click: () => this.quitApp()
       }
     ]);
-    
+
     this.tray.setContextMenu(contextMenu);
     this.tray.setToolTip('Clipboard Viewer');
-    
+
     // 双击托盘图标显示主窗口
     this.tray.on('double-click', () => {
       this.windowManager.showMainWindow();
@@ -306,15 +306,15 @@ class ClipboardViewerApp {
   private async quitApp() {
     // 设置退出标志，通知窗口管理器应用正在退出
     this.windowManager.setAppQuitting(true);
-    
+
     // 设置应用退出标志
     (app as any).isQuitting = true;
-    
+
     // 如果是开发模式，停止开发服务器进程
     if (isDev) {
       await this.stopDevServer();
     }
-    
+
     // 退出应用，before-quit 事件会处理清理逻辑
     app.quit();
   }
@@ -322,22 +322,22 @@ class ClipboardViewerApp {
   private async stopDevServer() {
     try {
       console.log('正在停止开发服务器...');
-      
+
       // 查找并终止开发服务器进程
       const { exec } = require('child_process');
       const util = require('util');
       const execAsync = util.promisify(exec);
-      
+
       // 扩展端口检查范围，包括常见的开发服务器端口
       const ports = [3000, 5173, 8080, 8081];
-      
+
       // 1. 首先终止占用端口的进程
       for (const port of ports) {
         try {
           // 在macOS上查找占用指定端口的进程
           const { stdout } = await execAsync(`lsof -ti:${port}`);
           const pids = stdout.trim().split('\n').filter((pid: string) => pid);
-          
+
           for (const pid of pids) {
             if (pid) {
               console.log(`终止端口 ${port} 上的进程 ${pid}`);
@@ -345,7 +345,7 @@ class ClipboardViewerApp {
                 process.kill(parseInt(pid), 'SIGTERM');
                 // 等待进程优雅退出
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                
+
                 // 检查进程是否还在运行，如果是则强制终止
                 try {
                   process.kill(parseInt(pid), 0); // 检查进程是否存在
@@ -365,25 +365,25 @@ class ClipboardViewerApp {
           console.log(`端口 ${port} 未被占用或查找失败:`, (error as Error).message);
         }
       }
-      
+
       // 2. 查找并终止所有相关的node进程
       try {
         console.log('查找相关的开发进程...');
         const keywords = ['vite', 'electron', 'wait-on', 'dev-server', 'webpack'];
-        
+
         for (const keyword of keywords) {
           try {
             // 查找包含关键词的node进程
             const { stdout } = await execAsync(`ps aux | grep "${keyword}" | grep -v grep | awk '{print $2}'`);
             const pids = stdout.trim().split('\n').filter((pid: string) => pid && !isNaN(parseInt(pid)));
-            
+
             for (const pid of pids) {
               if (pid && parseInt(pid) !== process.pid) { // 不要终止当前进程
                 console.log(`终止包含 "${keyword}" 的进程 ${pid}`);
                 try {
                   process.kill(parseInt(pid), 'SIGTERM');
                   await new Promise(resolve => setTimeout(resolve, 500));
-                  
+
                   // 检查并强制终止
                   try {
                     process.kill(parseInt(pid), 0);
@@ -403,20 +403,20 @@ class ClipboardViewerApp {
       } catch (error) {
         console.log('查找相关进程时出错:', (error as Error).message);
       }
-      
+
       // 3. 尝试终止整个进程组（如果有的话）
       try {
         // 查找当前应用的子进程
         const { stdout } = await execAsync(`pgrep -P ${process.pid}`);
         const childPids = stdout.trim().split('\n').filter((pid: string) => pid);
-        
+
         for (const pid of childPids) {
           if (pid) {
             console.log(`终止子进程 ${pid}`);
             try {
               process.kill(parseInt(pid), 'SIGTERM');
               await new Promise(resolve => setTimeout(resolve, 500));
-              
+
               try {
                 process.kill(parseInt(pid), 0);
                 process.kill(parseInt(pid), 'SIGKILL');
@@ -431,7 +431,7 @@ class ClipboardViewerApp {
       } catch (error) {
         console.log('查找子进程失败:', (error as Error).message);
       }
-      
+
       console.log('开发服务器停止完成');
     } catch (error) {
       console.error('停止开发服务器时出错:', error);
