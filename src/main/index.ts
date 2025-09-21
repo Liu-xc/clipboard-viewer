@@ -1,5 +1,8 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, Menu, Tray, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, globalShortcut } from 'electron';
 import * as path from 'path';
+
+// 扩展 app 对象以包含 isQuitting 属性
+(app as any).isQuitting = false;
 import { WindowManager } from './windowManager';
 import { ClipboardService } from './clipboard';
 import { ConfigService } from './config';
@@ -88,8 +91,22 @@ class ClipboardViewerApp {
       this.windowManager.showMainWindow();
     });
 
-    app.on('before-quit', () => {
+    app.on('before-quit', (event) => {
+      // 设置应用退出标志
+      (app as any).isQuitting = true;
+      this.windowManager.setAppQuitting(true);
+      
+      // 停止剪贴板监听
       this.clipboardService.stopMonitoring();
+      
+      // 清理托盘
+      if (this.tray && !this.tray.isDestroyed()) {
+        this.tray.destroy();
+        this.tray = null;
+      }
+      
+      // 清理全局快捷键
+      globalShortcut.unregisterAll();
     });
 
     app.on('will-quit', () => {
@@ -244,7 +261,7 @@ class ClipboardViewerApp {
 
     // 应用控制
     ipcMain.handle('app:quit', () => {
-      app.quit();
+      this.quitApp();
     });
 
     ipcMain.handle('app:minimizeToTray', () => {
@@ -272,7 +289,7 @@ class ClipboardViewerApp {
       { type: 'separator' },
       {
         label: '退出',
-        click: () => app.quit()
+        click: () => this.quitApp()
       }
     ]);
     
@@ -283,6 +300,17 @@ class ClipboardViewerApp {
     this.tray.on('double-click', () => {
       this.windowManager.showMainWindow();
     });
+  }
+
+  private quitApp() {
+    // 设置退出标志，通知窗口管理器应用正在退出
+    this.windowManager.setAppQuitting(true);
+    
+    // 设置应用退出标志
+    (app as any).isQuitting = true;
+    
+    // 退出应用，before-quit 事件会处理清理逻辑
+    app.quit();
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ActionIcon, Tooltip } from '@mantine/core';
-import { IconClipboard, IconClipboardData } from '@tabler/icons-react';
+import { ActionIcon, Tooltip, Menu } from '@mantine/core';
+import { IconClipboard, IconClipboardData, IconEye, IconEyeOff, IconX } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 
 interface FloatingBallConfig {
@@ -20,6 +20,7 @@ const App: React.FC = () => {
   // 移除拖动状态，现在由CSS的-webkit-app-region: drag处理
   const [hasNewClipboard, setHasNewClipboard] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('auto');
+  const [menuOpened, setMenuOpened] = useState(false);
 
   // 加载配置
   useEffect(() => {
@@ -84,6 +85,52 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // 处理右键菜单事件
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setMenuOpened(true);
+  }, []);
+
+  // 显示主窗口
+  const handleShowMainWindow = useCallback(async () => {
+    setMenuOpened(false);
+    await handleClick();
+  }, [handleClick]);
+
+  // 隐藏悬浮球
+  const handleHideFloatingBall = useCallback(async () => {
+    setMenuOpened(false);
+    try {
+      if (window.electronAPI) {
+        await window.electronAPI.toggleFloatingBall();
+      }
+    } catch (error) {
+      console.error('Failed to hide floating ball:', error);
+      notifications.show({
+        title: '错误',
+        message: '隐藏悬浮球时发生错误',
+        color: 'red'
+      });
+    }
+  }, []);
+
+  // 退出应用
+  const handleQuitApp = useCallback(async () => {
+    setMenuOpened(false);
+    try {
+      if (window.electronAPI) {
+        await window.electronAPI.quitApp();
+      }
+    } catch (error) {
+      console.error('Failed to quit app:', error);
+      notifications.show({
+        title: '错误',
+        message: '退出应用时发生错误',
+        color: 'red'
+      });
+    }
+  }, []);
+
   // 移除所有拖动相关的事件处理，现在由CSS的-webkit-app-region: drag处理窗口拖动
 
   // 获取主题类名
@@ -100,45 +147,79 @@ const App: React.FC = () => {
   }
 
   return (
-    <Tooltip
-      label="点击打开剪贴板查看器"
-      position="top"
+    <Menu
+      opened={menuOpened}
+      onClose={() => setMenuOpened(false)}
+      position="right-start"
       withArrow
-      openDelay={1000}
+      shadow="md"
     >
-      <div
-        className={`floating-ball ${getThemeClass()} ${hasNewClipboard ? 'pulse' : ''}`}
-        style={{
-          width: config.size,
-          height: config.size,
-          opacity: config.opacity,
-          cursor: 'pointer'
-        }}
-        onClick={handleClick}
-        role="button"
-        tabIndex={0}
-        aria-label="剪贴板查看器悬浮球"
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleClick();
-          }
-        }}
-      >
-        <ActionIcon
-          variant="transparent"
-          size={config.size * 0.6}
-          className="floating-ball-icon"
-          style={{ pointerEvents: 'none' }}
+      <Menu.Target>
+        <Tooltip
+          label="点击打开剪贴板查看器"
+          position="top"
+          withArrow
+          openDelay={1000}
         >
-          {hasNewClipboard ? (
-            <IconClipboardData size={config.size * 0.4} />
-          ) : (
-            <IconClipboard size={config.size * 0.4} />
-          )}
-        </ActionIcon>
-      </div>
-    </Tooltip>
+          <div
+            className={`floating-ball ${getThemeClass()} ${hasNewClipboard ? 'pulse' : ''}`}
+            style={{
+              width: config.size,
+              height: config.size,
+              opacity: config.opacity,
+              cursor: 'pointer'
+            }}
+            onClick={handleClick}
+            onContextMenu={handleContextMenu}
+            role="button"
+            tabIndex={0}
+            aria-label="剪贴板查看器悬浮球"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+              }
+            }}
+          >
+            <ActionIcon
+              variant="transparent"
+              size={config.size * 0.6}
+              className="floating-ball-icon"
+              style={{ pointerEvents: 'none' }}
+            >
+              {hasNewClipboard ? (
+                <IconClipboardData size={config.size * 0.4} />
+              ) : (
+                <IconClipboard size={config.size * 0.4} />
+              )}
+            </ActionIcon>
+          </div>
+        </Tooltip>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        <Menu.Item
+          leftSection={<IconEye size={14} />}
+          onClick={handleShowMainWindow}
+        >
+          显示主窗口
+        </Menu.Item>
+        <Menu.Item
+          leftSection={<IconEyeOff size={14} />}
+          onClick={handleHideFloatingBall}
+        >
+          隐藏悬浮球
+        </Menu.Item>
+        <Menu.Divider />
+        <Menu.Item
+          leftSection={<IconX size={14} />}
+          onClick={handleQuitApp}
+          color="red"
+        >
+          退出应用
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   );
 };
 

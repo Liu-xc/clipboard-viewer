@@ -1,4 +1,4 @@
-import { BrowserWindow, screen, globalShortcut } from 'electron';
+import { BrowserWindow, screen, globalShortcut, app } from 'electron';
 import * as path from 'path';
 const windowStateKeeper = require('electron-window-state');
 import { ConfigService } from './config';
@@ -9,6 +9,7 @@ export class WindowManager {
   private mainWindow: BrowserWindow | null = null;
   private floatingBallWindow: BrowserWindow | null = null;
   private configService: ConfigService;
+  private isAppQuitting: boolean = false;
 
   constructor(configService: ConfigService) {
     this.configService = configService;
@@ -99,11 +100,18 @@ export class WindowManager {
       this.setupDevRefreshMechanism();
     }
 
-    // 窗口关闭时隐藏而不是销毁
+    // 窗口关闭时的处理逻辑
     this.mainWindow.on('close', (event) => {
       if (!this.mainWindow?.isDestroyed()) {
-        event.preventDefault();
-        this.mainWindow?.hide();
+        // 在 macOS 上，如果不是通过应用退出，则隐藏窗口而不是关闭
+        if (process.platform === 'darwin' && !this.isAppQuitting && !(app as any).isQuitting) {
+          event.preventDefault();
+          this.mainWindow?.hide();
+          return;
+        }
+        // 在其他平台或明确退出时，允许正常关闭
+        // 确保在退出时清理窗口引用
+        this.mainWindow = null;
       }
     });
 
@@ -134,7 +142,7 @@ export class WindowManager {
       movable: true,
       minimizable: false,
       maximizable: false,
-      closable: false,
+      closable: true,
       focusable: true,
       show: config.floatingBall.enabled,
       webPreferences: {
@@ -178,39 +186,103 @@ export class WindowManager {
       }
     });
 
+    // 悬浮球窗口关闭时的处理逻辑
+    this.floatingBallWindow.on('close', (event) => {
+      if (!this.floatingBallWindow?.isDestroyed()) {
+        // 如果不是应用退出状态，阻止关闭并隐藏窗口
+        if (!this.isAppQuitting && !(app as any).isQuitting) {
+          event.preventDefault();
+          this.floatingBallWindow?.hide();
+          return;
+        }
+        // 在退出时允许正常关闭，清理窗口引用
+        this.floatingBallWindow = null;
+      }
+    });
+
     return this.floatingBallWindow;
   }
 
   showMainWindow() {
-    if (this.mainWindow) {
-      if (this.mainWindow.isMinimized()) {
-        this.mainWindow.restore();
+    // 如果应用正在退出，不要尝试显示窗口
+    if (this.isAppQuitting) {
+      console.log('App is quitting, cannot show main window');
+      return;
+    }
+
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      try {
+        if (this.mainWindow.isMinimized()) {
+          this.mainWindow.restore();
+        }
+        this.mainWindow.show();
+        this.mainWindow.focus();
+      } catch (error) {
+        console.error('Error showing main window:', error);
+        // 如果窗口已被销毁，清空引用
+        this.mainWindow = null;
       }
-      this.mainWindow.show();
-      this.mainWindow.focus();
+    } else if (!this.mainWindow || this.mainWindow.isDestroyed()) {
+      console.log('Main window is destroyed or null, cannot show');
+      // 如果不是退出状态，可以尝试重新创建窗口
+      if (!this.isAppQuitting) {
+        console.log('Attempting to recreate main window');
+        this.createMainWindow().catch(console.error);
+      }
     }
   }
 
   hideMainWindow() {
-    if (this.mainWindow) {
-      this.mainWindow.hide();
+    // 如果应用正在退出，不需要隐藏窗口
+    if (this.isAppQuitting) {
+      return;
+    }
+
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      try {
+        this.mainWindow.hide();
+      } catch (error) {
+        console.error('Error hiding main window:', error);
+        this.mainWindow = null;
+      }
     }
   }
 
   toggleFloatingBall() {
-    if (this.floatingBallWindow) {
-      if (this.floatingBallWindow.isVisible()) {
-        this.floatingBallWindow.hide();
-      } else {
-        this.floatingBallWindow.show();
+    // 如果应用正在退出，不要操作悬浮球
+    if (this.isAppQuitting) {
+      return;
+    }
+
+    if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
+      try {
+        if (this.floatingBallWindow.isVisible()) {
+          this.floatingBallWindow.hide();
+        } else {
+          this.floatingBallWindow.show();
+        }
+      } catch (error) {
+        console.error('Error toggling floating ball:', error);
+        this.floatingBallWindow = null;
       }
     }
   }
 
   sendToMainWindow(channel: string, ...args: any[]) {
+    // 如果应用正在退出，不要发送消息到窗口
+    if (this.isAppQuitting) {
+      console.log('App is quitting, skipping message to main window:', channel);
+      return;
+    }
+
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      console.log('主进程发送事件到渲染进程:', channel, args);
-      this.mainWindow.webContents.send(channel, ...args);
+      try {
+        console.log('主进程发送事件到渲染进程:', channel, args);
+        this.mainWindow.webContents.send(channel, ...args);
+      } catch (error) {
+        console.error('Error sending message to main window:', error);
+        this.mainWindow = null;
+      }
     } else {
       console.log('主窗口不存在或已销毁，无法发送事件:', channel);
     }
@@ -227,12 +299,17 @@ export class WindowManager {
   // 更新悬浮球位置
   updateFloatingBallPosition(x: number, y: number) {
     if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
-      // 验证参数并取整
-      const validX = typeof x === 'number' && !isNaN(x) ? Math.round(x) : 0;
-      const validY = typeof y === 'number' && !isNaN(y) ? Math.round(y) : 0;
-      
-      console.log(`Setting floating ball position: x=${validX}, y=${validY}`);
-      this.floatingBallWindow.setPosition(validX, validY);
+      try {
+        // 验证参数并取整
+        const validX = typeof x === 'number' && !isNaN(x) ? Math.round(x) : 0;
+        const validY = typeof y === 'number' && !isNaN(y) ? Math.round(y) : 0;
+        
+        console.log(`Setting floating ball position: x=${validX}, y=${validY}`);
+        this.floatingBallWindow.setPosition(validX, validY);
+      } catch (error) {
+        console.error('Error updating floating ball position:', error);
+        this.floatingBallWindow = null;
+      }
     }
   }
 
@@ -262,12 +339,29 @@ export class WindowManager {
   }
 
   destroyAllWindows() {
-    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      this.mainWindow.destroy();
+    try {
+      if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+        this.mainWindow.destroy();
+      }
+    } catch (error) {
+      console.error('Error destroying main window:', error);
+    } finally {
+      this.mainWindow = null;
     }
-    if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
-      this.floatingBallWindow.destroy();
+    
+    try {
+      if (this.floatingBallWindow && !this.floatingBallWindow.isDestroyed()) {
+        this.floatingBallWindow.destroy();
+      }
+    } catch (error) {
+      console.error('Error destroying floating ball window:', error);
+    } finally {
+      this.floatingBallWindow = null;
     }
+  }
+
+  setAppQuitting(quitting: boolean) {
+    this.isAppQuitting = quitting;
   }
 
   // 开发模式下的强制刷新机制
