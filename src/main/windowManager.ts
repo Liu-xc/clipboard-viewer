@@ -163,6 +163,11 @@ export class WindowManager {
       }
     });
 
+    // 为 macOS 设置更高的窗口层级，确保在全屏应用上显示
+    if (process.platform === 'darwin') {
+      this.floatingBallWindow.setAlwaysOnTop(true, 'screen-saver');
+    }
+
     // 设置窗口透明度
     this.floatingBallWindow.setOpacity(config.floatingBall.opacity);
 

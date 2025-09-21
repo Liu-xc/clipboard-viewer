@@ -107,8 +107,8 @@ function App() {
       header={{ height: 40 }}
       navbar={{
         width: collapsed ? 60 : 200,
-        breakpoint: 'sm',
-        collapsed: { desktop: false }
+        breakpoint: 'xs',
+        collapsed: { desktop: false, mobile: false }
       }}
       padding="md"
     >
