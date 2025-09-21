@@ -9,6 +9,7 @@ import Sidebar from './components/Sidebar';
 import ClipboardHistory from './pages/ClipboardHistory';
 import MarkdownViewer from '../../../pages/MarkdownViewer';
 import MermaidTest from '../../../pages/MermaidTest';
+import Favorites from './pages/Favorites';
 
 import type { AppConfig } from './types';
 
@@ -200,6 +201,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/history" replace />} />
           <Route path="/history" element={<ClipboardHistory />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="/markdown/:id" element={<MarkdownViewer />} />
           <Route path="/mermaid-test" element={<MermaidTest />} />
           <Route path="*" element={<Navigate to="/history" replace />} />
