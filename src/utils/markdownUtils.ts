@@ -353,6 +353,329 @@ export function extractCodeBlocks(content: string): CodeBlock[] {
 }
 
 /**
+ * 检测内容是否为代码类型
+ * @param content 要检测的文本内容
+ * @returns 是否为代码内容
+ */
+export function detectCodeContent(content: string): boolean {
+  if (!content || typeof content !== 'string') {
+    return false;
+  }
+
+  const trimmed = content.trim();
+  if (trimmed.length === 0) {
+    return false;
+  }
+
+  // 如果已经是 markdown 格式，不需要再处理
+  if (detectMarkdown(trimmed)) {
+    return false;
+  }
+
+  // 代码特征模式
+  const codePatterns = [
+    // 函数定义
+    /function\s+\w+\s*\(/,
+    /def\s+\w+\s*\(/,
+    /const\s+\w+\s*=/,
+    /let\s+\w+\s*=/,
+    /var\s+\w+\s*=/,
+    /class\s+\w+/,
+    /interface\s+\w+/,
+    /type\s+\w+\s*=/,
+    /enum\s+\w+/,
+    /struct\s+\w+/,
+    /public\s+class\s+\w+/,
+    /private\s+class\s+\w+/,
+    /protected\s+class\s+\w+/,
+    
+    // 导入/导出语句
+    /^import\s+/m,
+    /^export\s+/m,
+    /^from\s+['"].*['"]$/m,
+    /^#include\s*</m,
+    /^using\s+/m,
+    /^package\s+/m,
+    
+    // 控制结构
+    /if\s*\([^)]*\)\s*\{/,
+    /else\s*\{/,
+    /for\s*\([^)]*\)\s*\{/,
+    /while\s*\([^)]*\)\s*\{/,
+    /switch\s*\([^)]*\)\s*\{/,
+    /try\s*\{/,
+    /catch\s*\([^)]*\)\s*\{/,
+    /finally\s*\{/,
+    
+    // 特殊语法
+    /=>\s*\{/, // 箭头函数
+    /\$\{[^}]*\}/, // 模板字符串
+    /@\w+/, // 装饰器/注解
+    /\[\w+\]/, // 属性访问
+    /\w+::\w+/, // 命名空间
+    /\w+\.\w+\(/, // 方法调用
+    
+    // 数据结构
+    /\{[^}]*:[^}]*\}/, // 对象字面量
+    /\[[^\]]*\]/, // 数组
+    
+    // 注释
+    /\/\/.*$/m, // 单行注释
+    /\/\*[\s\S]*?\*\//m, // 多行注释
+    /#.*$/m, // Python/Shell 注释
+    /<!--[\s\S]*?-->/m, // HTML 注释
+  ];
+
+  // 计算匹配的代码模式数量
+  let codePatternCount = 0;
+  for (const pattern of codePatterns) {
+    if (pattern.test(trimmed)) {
+      codePatternCount++;
+    }
+  }
+
+  // 检查代码特征字符的比例
+  const codeChars = (trimmed.match(/[{}();=<>!&|+\-*\/\[\]]/g) || []).length;
+  const totalChars = trimmed.length;
+  const codeCharRatio = codeChars / totalChars;
+
+  // 检查是否包含多行且有缩进结构
+  const lines = trimmed.split('\n');
+  const hasIndentation = lines.some(line => /^\s{2,}/.test(line));
+  const hasMultipleLines = lines.length > 3;
+
+  // 综合判断
+  return (
+    codePatternCount >= 2 || // 匹配多个代码模式
+    (codePatternCount >= 1 && codeCharRatio > 0.1) || // 匹配代码模式且特殊字符较多
+    (codeCharRatio > 0.15 && hasIndentation && hasMultipleLines) // 特殊字符多且有缩进结构
+  );
+}
+
+/**
+ * 检测编程语言类型
+ * @param content 代码内容
+ * @returns 检测到的编程语言
+ */
+export function detectProgrammingLanguage(content: string): string {
+  if (!content || typeof content !== 'string') {
+    return 'text';
+  }
+
+  const trimmed = content.trim();
+  
+  // 语言特征模式
+  const languagePatterns: { [key: string]: RegExp[] } = {
+    javascript: [
+      /^import\s+.*from\s+['"].*['"];?$/m,
+      /^export\s+(default\s+)?/m,
+      /const\s+\w+\s*=/,
+      /let\s+\w+\s*=/,
+      /=>\s*\{/,
+      /console\.log\(/,
+      /document\./,
+      /window\./,
+      /\$\{[^}]*\}/
+    ],
+    typescript: [
+      /interface\s+\w+/,
+      /type\s+\w+\s*=/,
+      /enum\s+\w+/,
+      /:.*\s*=>\s*/,
+      /<.*>/,
+      /as\s+\w+/,
+      /implements\s+\w+/
+    ],
+    python: [
+      /^def\s+\w+\s*\(/m,
+      /^class\s+\w+/m,
+      /^import\s+\w+/m,
+      /^from\s+\w+\s+import/m,
+      /if\s+__name__\s*==\s*['"]__main__['"]:/,
+      /#.*$/m,
+      /print\(/,
+      /self\./
+    ],
+    java: [
+      /^public\s+class\s+\w+/m,
+      /^private\s+\w+/m,
+      /^protected\s+\w+/m,
+      /public\s+static\s+void\s+main/,
+      /System\.out\.println/,
+      /^package\s+/m,
+      /^import\s+java\./m
+    ],
+    csharp: [
+      /^using\s+System/m,
+      /^namespace\s+\w+/m,
+      /^public\s+class\s+\w+/m,
+      /Console\.WriteLine/,
+      /\[\w+\]/,
+      /get;\s*set;/
+    ],
+    cpp: [
+      /^#include\s*</m,
+      /std::/,
+      /cout\s*<</,
+      /cin\s*>>/,
+      /int\s+main\s*\(/,
+      /using\s+namespace\s+std/
+    ],
+    c: [
+      /^#include\s*</m,
+      /printf\(/,
+      /scanf\(/,
+      /int\s+main\s*\(/,
+      /malloc\(/,
+      /free\(/
+    ],
+    go: [
+      /^package\s+\w+/m,
+      /^import\s*\(/m,
+      /func\s+\w+\s*\(/,
+      /fmt\./,
+      /:=\s*/,
+      /go\s+\w+\(/
+    ],
+    rust: [
+      /fn\s+\w+\s*\(/,
+      /let\s+mut\s+/,
+      /println!/,
+      /use\s+std::/,
+      /impl\s+\w+/,
+      /&str/
+    ],
+    php: [
+      /<\?php/,
+      /\$\w+/,
+      /echo\s+/,
+      /function\s+\w+\s*\(/,
+      /->\w+/,
+      /\$this->/
+    ],
+    ruby: [
+      /^def\s+\w+/m,
+      /^class\s+\w+/m,
+      /puts\s+/,
+      /end$/m,
+      /@\w+/,
+      /\|\w+\|/
+    ],
+    swift: [
+      /^import\s+\w+/m,
+      /func\s+\w+\s*\(/,
+      /var\s+\w+:/,
+      /let\s+\w+:/,
+      /print\(/,
+      /override\s+func/
+    ],
+    kotlin: [
+      /^fun\s+\w+\s*\(/m,
+      /^class\s+\w+/m,
+      /val\s+\w+/,
+      /var\s+\w+/,
+      /println\(/,
+      /companion\s+object/
+    ],
+    html: [
+      /<html/i,
+      /<head/i,
+      /<body/i,
+      /<div/i,
+      /<p>/i,
+      /<script/i,
+      /<style/i
+    ],
+    css: [
+      /\{[^}]*:[^}]*\}/,
+      /@media/,
+      /@import/,
+      /\.[\w-]+\s*\{/,
+      /#[\w-]+\s*\{/,
+      /:[\w-]+\s*\{/
+    ],
+    sql: [
+      /^SELECT\s+/mi,
+      /^INSERT\s+INTO/mi,
+      /^UPDATE\s+/mi,
+      /^DELETE\s+FROM/mi,
+      /^CREATE\s+TABLE/mi,
+      /^ALTER\s+TABLE/mi,
+      /WHERE\s+/mi,
+      /JOIN\s+/mi
+    ],
+    json: [
+      /^\s*\{[\s\S]*\}\s*$/,
+      /^\s*\[[\s\S]*\]\s*$/,
+      /"\w+"\s*:/,
+      /:\s*"[^"]*"/,
+      /:\s*\d+/,
+      /:\s*(true|false|null)/
+    ],
+    xml: [
+      /<\?xml/i,
+      /<\w+[^>]*>/,
+      /<\/\w+>/,
+      /<\w+[^>]*\/>/
+    ],
+    yaml: [
+      /^\w+:\s*/m,
+      /^\s+-\s+/m,
+      /^---/m,
+      /^\.\.\./m
+    ],
+    bash: [
+      /^#!/m,
+      /\$\w+/,
+      /echo\s+/,
+      /if\s*\[/,
+      /then$/m,
+      /fi$/m,
+      /chmod\s+/,
+      /grep\s+/
+    ]
+  };
+
+  // 计算每种语言的匹配分数
+  const scores: { [key: string]: number } = {};
+  
+  for (const [language, patterns] of Object.entries(languagePatterns)) {
+    let score = 0;
+    for (const pattern of patterns) {
+      if (pattern.test(trimmed)) {
+        score++;
+      }
+    }
+    scores[language] = score;
+  }
+
+  // 找到得分最高的语言
+  let bestLanguage = 'text';
+  let bestScore = 0;
+  
+  for (const [language, score] of Object.entries(scores)) {
+    if (score > bestScore) {
+      bestScore = score;
+      bestLanguage = language;
+    }
+  }
+
+  // 如果没有明确匹配，返回 text
+  return bestScore > 0 ? bestLanguage : 'text';
+}
+
+/**
+ * 将代码内容包装为 Markdown 代码块
+ * @param content 代码内容
+ * @param language 编程语言（可选，会自动检测）
+ * @returns Markdown 格式的代码块
+ */
+export function wrapAsCodeBlock(content: string, language?: string): string {
+  const detectedLanguage = language || detectProgrammingLanguage(content);
+  return `\`\`\`${detectedLanguage}\n${content}\n\`\`\``;
+}
+
+/**
  * 计算Markdown内容的复杂度分数
  * @param content Markdown文本内容
  * @returns 复杂度分数 (0-100)

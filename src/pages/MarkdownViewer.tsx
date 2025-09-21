@@ -6,7 +6,7 @@ import { MarkdownRenderer } from '../renderer/main/src/components/MarkdownRender
 import TableOfContents from '../renderer/main/src/components/TableOfContents';
 import PageHeader from '../renderer/main/src/components/PageHeader';
 import { ClipboardItem, MarkdownContent, MarkdownRenderOptions } from '../../shared/types';
-import { detectMarkdown, parseMarkdownContent, generateTableOfContents } from '../utils/markdownUtils';
+import { detectMarkdown, parseMarkdownContent, generateTableOfContents, detectCodeContent, wrapAsCodeBlock } from '../utils/markdownUtils';
 import { notifications } from '@mantine/notifications';
 
 interface MarkdownViewerProps {
@@ -416,17 +416,36 @@ export const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
                     />
                   );
                 } else {
-                  // 对于非 Markdown 内容，以预格式化文本显示
-                  return (
-                    <div>
-                      <Text size="sm" c="dimmed" mb="md">
-                        检测到纯文本内容，以预格式化文本显示：
-                      </Text>
-                      <Code block style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                        {content}
-                      </Code>
-                    </div>
-                  );
+                  // 检测是否为代码内容
+                  const isCodeContent = detectCodeContent(content);
+                  
+                  if (isCodeContent) {
+                    // 将代码内容包装为 Markdown 代码块并通过 MarkdownRenderer 渲染
+                    const wrappedContent = wrapAsCodeBlock(content);
+                    return (
+                      <div>
+                        <Text size="sm" c="dimmed" mb="md">
+                          检测到代码内容，以语法高亮显示：
+                        </Text>
+                        <MarkdownRenderer
+                          content={wrappedContent}
+                          options={renderOptions}
+                        />
+                      </div>
+                    );
+                  } else {
+                    // 对于普通文本内容，以预格式化文本显示
+                    return (
+                      <div>
+                        <Text size="sm" c="dimmed" mb="md">
+                          检测到纯文本内容，以预格式化文本显示：
+                        </Text>
+                        <Code block style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                          {content}
+                        </Code>
+                      </div>
+                    );
+                  }
                 }
               })()
             )}

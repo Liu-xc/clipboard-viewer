@@ -77,6 +77,15 @@ const ClipboardHistory: React.FC = () => {
         // 在 web 环境中提供测试数据
         const mockData: ClipboardItem[] = [
           {
+            id: 'test-code-1',
+            content: 'function calculateSum(a, b) {\n  return a + b;\n}\n\nconst result = calculateSum(5, 3);\nconsole.log(result);',
+            preview: 'function calculateSum(a, b) {\n  return a + b;\n}\n\nconst result = calculateSum(5, 3);\nconsole.log(result);',
+            type: 'code',
+            timestamp: Date.now() - 1000 * 60 * 2,
+            favorite: false,
+            tags: ['代码', 'javascript']
+          },
+          {
             id: 'test-mermaid-1',
             content: 'graph TD\n    A[开始] --> B[处理]\n    B --> C[结束]',
             preview: '流程图: 开始 → 处理 → 结束',
@@ -84,6 +93,15 @@ const ClipboardHistory: React.FC = () => {
             timestamp: Date.now() - 1000 * 60 * 5,
             favorite: false,
             tags: ['测试', 'mermaid']
+          },
+          {
+            id: 'test-code-2',
+            content: 'def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(10))',
+            preview: 'def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(10))',
+            type: 'code',
+            timestamp: Date.now() - 1000 * 60 * 8,
+            favorite: true,
+            tags: ['代码', 'python']
           },
           {
             id: 'test-text-1',

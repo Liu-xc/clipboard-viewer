@@ -43,7 +43,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import type { ClipboardItem } from '../types';
-import { detectMarkdown } from '../../../../utils/markdownUtils';
+import { detectMarkdown, wrapAsCodeBlock } from '../../../../utils/markdownUtils';
 import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface ClipboardItemListProps {
@@ -138,7 +138,7 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
     .sort((a, b) => b.timestamp - a.timestamp);
 
   const handleCardClick = (item: ClipboardItem) => {
-    if (item.type === 'text' || item.type === 'mermaid' || item.type === 'file') {
+    if (item.type === 'text' || item.type === 'mermaid' || item.type === 'file' || item.type === 'code') {
       navigate(`/markdown/${item.id}`);
     }
   };
@@ -151,7 +151,7 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
         padding="md" 
         radius="md" 
         className="clipboard-item"
-        style={{ cursor: (item.type === 'text' || item.type === 'mermaid' || item.type === 'file') ? 'pointer' : 'default' }}
+        style={{ cursor: (item.type === 'text' || item.type === 'mermaid' || item.type === 'file' || item.type === 'code') ? 'pointer' : 'default' }}
         onClick={() => handleCardClick(item)}
       >
         <Group justify="space-between" mb="xs">
@@ -204,7 +204,7 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
                 >
                   复制
                 </Menu.Item>
-                {(isMarkdown(item) || item.type === 'mermaid' || item.type === 'file') && (
+                {(isMarkdown(item) || item.type === 'mermaid' || item.type === 'file' || item.type === 'code') && (
                   <Menu.Item
                     leftSection={<IconEye size={14} />}
                     onClick={(e) => {
@@ -212,8 +212,8 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
                       handleViewMarkdown(item);
                     }}
                   >
-                    {item.type === 'mermaid' ? '查看图表' : item.type === 'file' ? '查看 Markdown' : '查看 Markdown'}
-                  </Menu.Item>
+                      {item.type === 'mermaid' ? '查看图表' : item.type === 'file' ? '查看 Markdown' : item.type === 'code' ? '查看代码' : '查看 Markdown'}
+                    </Menu.Item>
                 )}
                 {onToggleFavorite && (
                   <Menu.Item
@@ -262,9 +262,18 @@ const ClipboardItemList: React.FC<ClipboardItemListProps> = ({
               height={120}
             />
           ) : item.type === 'code' ? (
-            <Code block className="code-block">
-              {item.preview}
-            </Code>
+            <div style={{ maxHeight: '120px', overflow: 'hidden' }}>
+              <MarkdownRenderer 
+                content={wrapAsCodeBlock(item.preview)} 
+                options={{ 
+                  enableSyntaxHighlight: true,
+                  enableMermaid: false,
+                  enableMath: false,
+                  enableTableOfContents: false
+                }}
+                className="text-sm"
+              />
+            </div>
           ) : item.type === 'text' ? (
             <div style={{ maxHeight: '120px', overflow: 'hidden' }}>
               <MarkdownRenderer 
