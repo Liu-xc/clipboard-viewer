@@ -7,6 +7,81 @@
   line-height: 1.6;
 }
 
+/* 间距优化样式 - 紧凑模式 */
+.markdown-renderer p {
+  margin: 0.2em 0;
+}
+
+.markdown-renderer h1,
+.markdown-renderer h2,
+.markdown-renderer h3,
+.markdown-renderer h4,
+.markdown-renderer h5,
+.markdown-renderer h6 {
+  margin: 0.4em 0 0.2em 0;
+}
+
+.markdown-renderer h1 {
+  margin-top: 0.4em;
+}
+
+.markdown-renderer ul,
+.markdown-renderer ol {
+  margin: 0;
+  padding-left: 1.2em;
+  line-height: 1.3;
+}
+
+.markdown-renderer li {
+  margin: 0;
+}
+
+/* 嵌套列表优化 */
+.markdown-renderer li > ul,
+.markdown-renderer li > ol {
+  margin: 0.05em 0;
+}
+
+/* 紧凑列表项 */
+.markdown-renderer ul ul,
+.markdown-renderer ol ol,
+.markdown-renderer ul ol,
+.markdown-renderer ol ul {
+  margin: 0;
+}
+
+/* 列表项内段落优化 */
+.markdown-renderer li > p {
+  margin: 0;
+}
+
+.markdown-renderer pre {
+  margin: 0.4em 0;
+  padding: 0.8em;
+}
+
+.markdown-renderer blockquote {
+  margin: 0.4em 0;
+  padding: 0.5em 1em;
+}
+
+.markdown-renderer hr {
+  margin: 0.6em 0;
+}
+
+.markdown-renderer table {
+  margin: 0.4em 0;
+}
+
+/* 减少第一个和最后一个元素的边距 */
+.markdown-renderer > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-renderer > *:last-child {
+  margin-bottom: 0;
+}
+
 /* 亮色主题 */
 .markdown-renderer[data-color-mode="light"] {
   color: #24292f;
@@ -60,7 +135,7 @@
 /* Mermaid 图表容器样式 */
 .markdown-renderer .mermaid {
   text-align: center;
-  margin: 1em 0;
+  margin: 0.4em 0;
 }
 
 .markdown-renderer[data-color-mode="dark"] .mermaid {
