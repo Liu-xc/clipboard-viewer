@@ -1,2 +1,3 @@
 - 使用 pnpm 进行包管理
 - 当需要测试 UI 时，始终优先考虑 storybook
+- 当需要启动项目时，在不同的终端中执行 ` pnpm run dev:frontend`、`pnpm run dev:electron:managed`
